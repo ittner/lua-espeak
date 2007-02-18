@@ -38,10 +38,10 @@
     lua_settable(L, -3);
 
 
+/* Prototypes */
 
 static void push_event(lua_State *L, espeak_EVENT *ev);
 static espeak_EVENT *get_event(lua_State *L, int i);
-static void free_event(espeak_EVENT *ev);
 static void push_language_list(lua_State *L, char *langlist);
 static char *get_language_list(lua_State *L, int i);
 static void push_voice(lua_State *L, espeak_VOICE *v);
@@ -679,7 +679,168 @@ static void constants(lua_State *L) {
 
 
 
+/*!!! Functions */
+
+/*!! espeak.Initialize(audio_output, buflength, path)
+ *
+ * Must be called before any synthesis functions are called.
+ *
+ * 'audio_output' is the audio data can either be played by eSpeak or passed
+ *  back by the SynthCallback function.
+ *
+ * 'buflength' is the length (in mS) of sound buffers passed to the
+ * SynthCallback function.
+ *
+ * 'path' is the directory which contains the espeak-data directory, or nil
+ * for the default location.
+ *
+ * This function returns the sample rate in Hz.
+ *
+ */
+
+static int lInitialize(lua_State *L) { 
+    const char *path = NULL;
+    
+    if (!lua_isnil(L, 3))
+        path =  lua_tostring(L, 3);
+
+    lua_pushnumber(L, espeak_Initialize(luaL_checknumber(L, 1),
+        luaL_checknumber(L, 2), path));
+    return 1;
+}
+
+
+
+ /************ CALLBACKS HERE *************/
+
+
+
+/*!! espeak.Synth(text, position, position_type, end_position, flags, unique_identifier) 
+ *
+ * Synthesize speech for the specified text.  The speech sound data is passed
+ * to the calling program in buffers by means of the callback function
+ * specified by espeak.SetSynthCallback(). The command is asynchronous: it
+ * is internally buffered and returns as soon as possible. If
+ * espeak.Initialize() was previously called with espeak.AUDIO_OUTPUT_PLAYBACK
+ * as argument, the sound data are played by eSpeak.
+ *
+ * 'text' is a string with the text to be spoken.  It may be either 8-bit
+ * characters,  wide characters, or UTF8 encoding. Which of these is
+ * determined by the 'flags' parameter.
+ *
+ * 'position' is the position in the text where speaking starts. Zero or nil
+ * indicates speak from the start of the text.
+ *
+ * 'position_type' determines whether "position" is a number of characters,
+ * words, or sentences. Valied values are espeak.POS_CHARACTER, 
+ * espeak.POS_WORD or espeak.POS_SENTENCE.
+ *
+ * 'end_position', if set, this gives a character position at which speaking
+ * will stop.  A value of zero or nil indicates no end position.
+ *
+ * 'flags':  These may be addedd together:
+ *     Type of character codes, one of: espeak.CHARS_UTF8, espeak.CHARS_8BIT,
+ *          espeak.CHARS_AUTO or espeak.CHARS_WCHAR
+ *
+ *     espeak.SSML   Elements within < > are treated as SSML elements, or if
+ *          not recognised are ignored.
+ *
+ *     espeak.PHONEMES  Text within [[ ]] is treated as phonemes codes (in
+ *          espeak's Hirschenbaum encoding).
+ *
+ *     espeak.ENDPAUSE  If set then a sentence pause is added at the end of
+ *          the text.  If not set then this pause is suppressed.
+ *
+ *  'unique_identifier' is a ineteger message identifier; helpful for
+ * identifying later  data supplied to the callback.
+ *
+ *  Return: EE_OK: operation achieved 
+ *          EE_BUFFER_FULL: the command can not be buffered; 
+ *            you may try after a while to call the function again.
+ *	   EE_INTERNAL_ERROR. 
+ *
+ */
+
+
+static int lSynth(lua_State *L) {
+    const char *text = NULL;
+	size_t size = 0;
+	unsigned int position = 0;
+	espeak_POSITION_TYPE ptype = POS_CHARACTER;
+	unsigned int end_position = 0;
+	unsigned int flags = 0;
+	unsigned int id = 0;
+
+    text = luaL_checkstring(L, 1);  
+    size = (strlen(text) + 1) * sizeof(char);
+    
+    if (!lua_isnil(L, 2))
+        position = (int) lua_tonumber(L, 2);
+
+    if (!lua_isnil(L, 3))
+        ptype = (int) lua_tonumber(L, 3);
+
+    if (!lua_isnil(L, 4))
+        end_position = (int) lua_tonumber(L, 4);
+
+    if (!lua_isnil(L, 5))
+        flags = (int) lua_tonumber(L, 5);
+
+    if (!lua_isnil(L, 6))
+        id = (int) lua_tonumber(L, 6);
+    
+    lua_pushnumber(L, espeak_Synth(text, size, position, ptype, end_position,
+        flags, &id, NULL));
+
+    return 1;
+}
+
+
+
+/**** Other functions here *****/
+
+
+
+/*!! espeak.Cancel()
+ * Stop immediately synthesis and audio output of the current text. When this
+ * function returns, the audio output is fully stopped and the synthesizer is
+ * ready to synthesize a new message. This function returns espeak.EE_OK if
+ * the operation was achieved or espeak.EE_INTERNAL_ERROR.
+ */
+
+static int lCancel(lua_State *L) {
+    lua_pushnumber(L, espeak_Cancel());
+    return 1;
+}
+
+
+/*!! espeak.IsPlaying()
+ * Returns 'true' if audio is playing or 'false' otherwise.
+ */
+
+static int lIsPlaying(lua_State *L) {
+    lua_pushboolean(L, espeak_IsPlaying());
+    return 1;
+}
+
+
+/*!! espeak.Terminate()
+ * Last function to be called. Returns espeak.EE_OK if the operation was
+ * achieved or espeak.EE_INTERNAL_ERROR.
+ */
+
+static int lTerminate(lua_State *L) {
+    lua_pushboolean(L, espeak_Terminate());
+    return 1;
+}
+
+
 static const luaL_reg funcs[] = {
+    { "Initialize", lInitialize },
+    { "Synth", lSynth },
+    { "Cancel", lCancel },
+    { "IsPlaying", lIsPlaying },
+    { "Terminate", lTerminate },
     { NULL, NULL }
 };
 
@@ -687,10 +848,6 @@ static const luaL_reg funcs[] = {
 int luaopen_espeak(lua_State *L) {
     luaL_register(L, LIB_NAME, funcs);
     constants(L);
-
-
-
-
-
     return 1;
 }
+
