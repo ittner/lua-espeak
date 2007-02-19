@@ -681,7 +681,9 @@ static void constants(lua_State *L) {
 
 /*!!! Functions */
 
-/*!! espeak.Initialize(audio_output, buflength, path)
+/*!! Initialization */
+
+/*! espeak.Initialize(audio_output, buflength, path)
  *
  * Must be called before any synthesis functions are called.
  *
@@ -714,8 +716,9 @@ static int lInitialize(lua_State *L) {
  /************ CALLBACKS HERE *************/
 
 
+/*!! Synthesis */
 
-/*!! espeak.Synth(text, position, position_type, end_position, flags, unique_identifier) 
+/*! espeak.Synth(text, position, position_type, end_position, flags, unique_identifier) 
  *
  * Synthesize speech for the specified text.  The speech sound data is passed
  * to the calling program in buffers by means of the callback function
@@ -740,7 +743,7 @@ static int lInitialize(lua_State *L) {
  *
  * 'flags':  These may be addedd together:
  *     Type of character codes, one of: espeak.CHARS_UTF8, espeak.CHARS_8BIT,
- *          espeak.CHARS_AUTO or espeak.CHARS_WCHAR
+ *          espeak.CHARS_AUTO (default) or espeak.CHARS_WCHAR.
  *
  *     espeak.SSML   Elements within < > are treated as SSML elements, or if
  *          not recognised are ignored.
@@ -751,13 +754,13 @@ static int lInitialize(lua_State *L) {
  *     espeak.ENDPAUSE  If set then a sentence pause is added at the end of
  *          the text.  If not set then this pause is suppressed.
  *
- *  'unique_identifier' is a ineteger message identifier; helpful for
+ * 'unique_identifier' is a ineteger message identifier; helpful for
  * identifying later  data supplied to the callback.
  *
- *  Return: EE_OK: operation achieved 
- *          EE_BUFFER_FULL: the command can not be buffered; 
- *            you may try after a while to call the function again.
- *	   EE_INTERNAL_ERROR. 
+ *  Return: espeak.EE_OK: operation achieved 
+ *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+ *              try to call the function again after a while.
+ *	        espeak.EE_INTERNAL_ERROR.
  *
  */
 
@@ -768,7 +771,7 @@ static int lSynth(lua_State *L) {
 	unsigned int position = 0;
 	espeak_POSITION_TYPE ptype = POS_CHARACTER;
 	unsigned int end_position = 0;
-	unsigned int flags = 0;
+	unsigned int flags = espeakCHARS_AUTO;
 	unsigned int id = 0;
 
     text = luaL_checkstring(L, 1);  
@@ -797,11 +800,96 @@ static int lSynth(lua_State *L) {
 
 
 
+/*! espeak.Synth_Mark(text, index_mark, end_position, flags, unique_identifier)
+ *
+ * Synthesize speech for the specified text. Similar to espeak.Synth() but
+ * the start position is specified by the name of a <mark> element in the
+ * text.
+ *
+ * 'index_mark' is the "name" attribute of a <mark> element within the text
+ *  which specified the point at which synthesis starts. it must be an UTF8
+ *  string.
+ *
+ *  For the other parameters, see espeak.Synth()
+ *
+ *  Return: espeak.EE_OK: operation achieved 
+ *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+ *              try to call the function again after a while.
+ *	        espeak.EE_INTERNAL_ERROR.
+ */
+#ifdef HAS_ESPEAK_SYNTH_MARK
+static int lSynth_Mark(lua_State *L) {
+    const char *text = NULL;
+    const char *mark = NULL;
+	size_t size = 0;
+	unsigned int end_position = 0;
+	unsigned int flags = espeakCHARS_AUTO;
+	unsigned int id = 0;
+
+    text = luaL_checkstring(L, 1);
+    size = (strlen(text) + 1) * sizeof(char);
+    
+    mark = luaL_checkstring(L, 2);
+
+    if (!lua_isnil(L, 3))
+        end_position = (int) lua_tonumber(L, 3);
+
+    if (!lua_isnil(L, 4))
+        flags = (int) lua_tonumber(L, 4);
+
+    if (!lua_isnil(L, 5))
+        id = (int) lua_tonumber(L, 5);
+    
+    lua_pushnumber(L, espeak_Synth_Mark(text, size, mark, end_position,
+        flags, &id, NULL));
+
+    return 1;
+}
+#endif /* HAS_ESPEAK_SYNTH_MARK */
+
+/*! espeak.Key(key_name)
+ *
+ * Speak the name of a keyboard key. Currently, this just speaks the
+ * 'key_name', given as a string.
+ *
+ *  Return: espeak.EE_OK: operation achieved 
+ *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+ *              try to call the function again after a while.
+ *	        espeak.EE_INTERNAL_ERROR.
+ */
+
+static int lKey(lua_State *L) {
+    const char *name = luaL_checkstring(L, 1);
+
+    lua_pushnumber(L, espeak_Key(name));
+    return 1;
+}
+
+
+/*! espeak.Char(character_code)
+ *
+ * Speak the name of the character, given as a 16 bit integer.
+ *
+ *  Return: espeak.EE_OK: operation achieved 
+ *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+ *              try to call the function again after a while.
+ *	        espeak.EE_INTERNAL_ERROR.
+ */
+
+static int lChar(lua_State *L) {
+    wchar_t ch = (wchar_t) lua_tonumber(L, 1);
+    lua_pushnumber(L, espeak_Char(ch));
+    return 1;
+}
+
+
+
 /**** Other functions here *****/
 
 
+/*!! Flush control and cancellation */
 
-/*!! espeak.Cancel()
+/*! espeak.Cancel()
  * Stop immediately synthesis and audio output of the current text. When this
  * function returns, the audio output is fully stopped and the synthesizer is
  * ready to synthesize a new message. This function returns espeak.EE_OK if
@@ -838,6 +926,11 @@ static int lTerminate(lua_State *L) {
 static const luaL_reg funcs[] = {
     { "Initialize", lInitialize },
     { "Synth", lSynth },
+#ifdef HAS_ESPEAK_SYNTH_MARK
+    { "Synth_Mark", lSynth_Mark },
+#endif
+    { "Key", lKey },
+    { "Char", lChar },
     { "Cancel", lCancel },
     { "IsPlaying", lIsPlaying },
     { "Terminate", lTerminate },
