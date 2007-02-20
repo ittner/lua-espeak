@@ -23,6 +23,9 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+/* For LUA_FILEHANDLE */
+#include <lualib.h>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,11 +34,14 @@
 #define LIB_NAME        "espeak"
 #define LIB_VERSION     LIB_NAME " r1"
 
+
 /* Table assumed on top */
 #define SET_TBL_INT(L, c, v)    \
     lua_pushliteral(L, c);      \
     lua_pushnumber(L, v);       \
     lua_settable(L, -3);
+
+#define checkfile(L, i) (*(FILE **) luaL_checkudata(L, i, LUA_FILEHANDLE))
 
 
 /* Prototypes */
@@ -44,10 +50,24 @@ static void push_event(lua_State *L, espeak_EVENT *ev);
 static espeak_EVENT *get_event(lua_State *L, int i);
 static void push_language_list(lua_State *L, char *langlist);
 static char *get_language_list(lua_State *L, int i);
-static void push_voice(lua_State *L, espeak_VOICE *v);
+static void push_voice(lua_State *L, const espeak_VOICE *v);
 static espeak_VOICE *get_voice(lua_State *L, int i);
 static void free_voice(espeak_VOICE *v);
 static void constants(lua_State *L);
+static int lInitialize(lua_State *L); 
+static int lSynth(lua_State *L);
+static int lKey(lua_State *L);
+static int lChar(lua_State *L);
+static int lSetParameter(lua_State *L);
+static int lGetParameter(lua_State *L);
+static int lSetPunctuationList(lua_State *L);
+static int lSetPhonemeTrace(lua_State *L);
+static int lCompileDictionary(lua_State *L);
+static int lListVoices(lua_State *L);
+static int lCancel(lua_State *L);
+static int lIsPlaying(lua_State *L);
+static int lTerminate(lua_State *L);
+
 
 
 
@@ -264,23 +284,25 @@ static void push_language_list(lua_State *L, char *langlist) {
     int pos = 0;
 
     lua_newtable(L);
-    
+
     while (langlist[pos]) {
+        lua_pushnumber(L, i++);
         lua_newtable(L);
 
-        lua_pushnumber(L, 1);   /* Priority number */
+        /* Priority number */
+        lua_pushnumber(L, 1);
         lua_pushnumber(L, (int) langlist[pos]);
         lua_settable(L, -3);
         pos++;
 
-        lua_pushnumber(L, 2);   /* Language name */
+        /* Language name */
+        lua_pushnumber(L, 2);
         lua_pushstring(L, &langlist[pos]);
         lua_settable(L, -3);
 
-        while (langlist[++pos]);
-       
-        lua_pushnumber(L, i++);
         lua_settable(L, -3);
+
+        while (langlist[++pos]);
         pos++;
     }
 }
@@ -371,7 +393,7 @@ static char *get_language_list(lua_State *L, int i) {
  * language list (not as a standard string!)
  */
 
-static void push_voice(lua_State *L, espeak_VOICE *v) {
+static void push_voice(lua_State *L, const espeak_VOICE *v) {
     lua_newtable(L);
 
     /* a given name for this voice. UTF8 string. */
@@ -384,7 +406,7 @@ static void push_voice(lua_State *L, espeak_VOICE *v) {
     /* list of pairs of (byte) priority + (string) language (and dialect
      * qualifier) */
     if (v->languages) {
-        lua_pushliteral(L, "name");
+        lua_pushliteral(L, "languages");
         push_language_list(L, v->languages);
         lua_settable(L, -3);
     }
@@ -883,8 +905,296 @@ static int lChar(lua_State *L) {
 }
 
 
+/*!! Speech parameters */
 
-/**** Other functions here *****/
+/*! espeak.SetParameter(parameter, value, relative)
+ *
+ * Sets the value of the specified parameter. 'relative' is a boolean that
+ * marks the value as relative to the current value.
+ *
+ * The following parameters are valid:
+ *
+ *      espeak.RATE:    speaking speed in word per minute.
+ *      espeak.VOLUME:  volume in range 0-100, 0 = silence
+ *      espeak.PITCH:   base pitch in Hz
+ *      espeak.RANGE:   pitch range in Hz
+ *
+ *      epeak.PUNCTUATION:  which punctuation characters to announce:
+ *         value in espeak_PUNCT_TYPE (none, all, some), 
+ *	 see espeak_GetParameter() to specify which characters are announced.
+ *
+ *      espeak.CAPITALS: announce capital letters by:
+ *         0=none,
+ *         1=sound icon,
+ *         2=spelling,
+ *         3 or higher, by raising pitch.  This values gives the amount
+ *              in Hz by which the pitch of a word raised to indicate it
+ *              has a capital letter.
+ *
+ *  Return: espeak.EE_OK: operation achieved 
+ *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+ *              try to call the function again after a while.
+ *	        espeak.EE_INTERNAL_ERROR.
+ */
+
+static int lSetParameter(lua_State *L) {
+    espeak_PARAMETER p = 0;
+    int v = 0;
+    int rel = 0;
+
+    p = (espeak_PARAMETER) luaL_checknumber(L, 1);
+    v = (int) luaL_checknumber(L, 2);
+    rel = lua_toboolean(L, 3);
+
+    lua_pushnumber(L, espeak_SetParameter(p, v, rel));
+    return 1;
+}
+
+
+
+/*! espeak.GetParameter(parameter, current);
+ *
+ * Returns synthesis parameters. 'current' is a boolean that tells the
+ * function to return the current value, instead of the default one.
+ *
+ */
+
+static int lGetParameter(lua_State *L) {
+    espeak_PARAMETER p = 0;
+    int curr = 0;
+
+    p = (espeak_PARAMETER) luaL_checknumber(L, 1);
+    curr = lua_toboolean(L, 2);
+    lua_pushnumber(L, espeak_GetParameter(p, curr));
+    return 1;
+}
+
+
+
+/*! espeak.SetPunctuationList(punctlist);
+ *
+ * Specified a list of punctuation characters whose names are to be spoken
+ * when the value of the Punctuation parameter is set to "some". 'punctlist'
+ * is a array of character codes (as integers). 
+ *
+ */
+
+static int lSetPunctuationList(lua_State *L) {
+    wchar_t *punctlist = NULL;
+    size_t bufsz = 16;
+    int i = 1;
+
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    punctlist = (wchar_t*) malloc(bufsz * sizeof(wchar_t));
+    if (punctlist == NULL) {
+        luaL_error(L, "Memory allocation failure");
+        return 0;
+    }
+
+    while (1) {
+        /* Stack: 1:<table> ... */
+        lua_pushnumber(L, i);
+        /* Stack: 1:<table> ... i */
+        lua_gettable(L, 1);
+        /* Stack: 1:<table> ... <somevalue> */
+        if (lua_isnil(L, -1)) {
+            lua_pop(L, 1);
+            break;
+        } else if (lua_type(L, -1) == LUA_TNUMBER) {
+            punctlist[i-1] = (wchar_t) lua_tointeger(L, -1);
+            lua_pop(L, 1);
+            /* Stack: 1:<table> ... */
+            i++;
+        } else {
+            free(punctlist);
+            luaL_error(L, "Bad character code found.");
+            return 0;
+        }
+        if (i >= bufsz) {
+            bufsz *= 2;
+            punctlist = (wchar_t*) realloc(punctlist, bufsz * sizeof(wchar_t));
+            if (punctlist == NULL) {
+                luaL_error(L, "Memory allocation failure");
+                return 0;
+            }
+        }
+    }
+
+    punctlist[i-1] = (wchar_t) 0;
+    lua_pushnumber(L, espeak_SetPunctuationList(punctlist));
+    free(punctlist);
+    return 1;
+}
+
+
+
+
+/*! espeak.SetPhonemeTrace(value, filehandle);
+ *
+ * Controls the output of phoneme symbols for the text.
+ *
+ *  value=0  No phoneme output (default)
+ *  value=1  Output the translated phoneme symbols for the text
+ *  value=2  as (1), but also output a trace of how the translation was done
+ *           (matching rules and list entries)
+ *
+ * 'filehandle' is the output stream for the phoneme symbols (and trace). If
+ * nil then it uses io.stdout.
+ * 
+ * This function returns no values.
+ *
+ */
+
+static int lSetPhonemeTrace(lua_State *L) {
+    int v = lua_tointeger(L, 1);
+    FILE *fp = NULL;
+
+    if (!lua_isnil(L, 2))
+        fp = checkfile(L, 2);
+    
+    espeak_SetPhonemeTrace(v, fp);
+    return 0;
+}
+
+    
+
+/*! espeak.CompileDictionary(path, filehandle);
+ *
+ * Compile pronunciation dictionary for a language which corresponds to the
+ * currently selected voice. The required voice should be selected before
+ * calling this function.
+ *
+ * 'path' is the directory which contains the language's "_rules" and
+ *  "_list" files. 'path' should end with a path separator character ('/').
+ *
+ * 'filehandle' is the output stream for error reports and statistics
+ * information. If nil, then io.stderr will be used.
+ *
+ * This function returns no values.
+ *
+ */
+
+static int lCompileDictionary(lua_State *L) {
+    const char *path;
+    FILE *fp = NULL;
+
+    path = luaL_checkstring(L, 1);
+    if (!lua_isnil(L, 2))
+        fp = checkfile(L, 2);
+
+    espeak_CompileDictionary(path, fp);
+    return 0;
+}
+
+
+/*!! Voice Selection */
+
+
+/*! espeak.ListVoices(voice_spec)
+ *
+ * Reads the voice files from espeak-data/voices and creates an array of
+ * voice tables. If 'voice_spec' is given, then only the voices which are
+ * compatible with the 'voice_spec' are listed, and they are listed in
+ * preference order.
+ * 
+ */
+
+static int lListVoices(lua_State *L) {
+    espeak_VOICE *v = NULL; 
+    const espeak_VOICE **vl;
+    int i;
+
+    if (lua_gettop(L) > 0)
+        v = get_voice(L, 1);
+
+    vl = espeak_ListVoices(v);
+
+    if (v != NULL)
+        free_voice(v);
+
+    lua_newtable(L);
+
+    for (i = 0; vl[i]; i++) {
+        /* Stack: 1: ... <table> */
+        lua_pushnumber(L, i+1); 
+        push_voice(L, vl[i]);
+        lua_settable(L, -3);
+    }
+
+    return 1;
+}
+
+
+
+/*! espeak.SetVoiceByName(name)
+ *
+ * Searches for a voice with a matching "name" field.  Language is not
+ * considered. "name" is a UTF8 string.
+ *
+ *  Return: espeak.EE_OK: operation achieved 
+ *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+ *              try to call the function again after a while.
+ *	        espeak.EE_INTERNAL_ERROR.
+ * 
+ */
+
+static int lSetVoiceByName(lua_State *L) {
+    const char *name = luaL_checkstring(L, 1);
+    lua_pushnumber(L, espeak_SetVoiceByName(name));
+    return 1;
+}
+
+
+/*! espeak.SetVoiceByProperties(voice_spec)
+ *
+ * An voice table is used to pass criteria to select a voice. Any of the
+ * following fields may be set:
+ *
+ *  name        nil or a voice name
+ *
+ *  languages   nil or a single language string (with optional dialect), eg.
+ *              "en-uk", or "en"
+ *
+ *  gender      0 or nil = not specified, 1 = male, 2 = female
+ *
+ *  age         0 or nil = not specified, or an age in years
+ *
+ *  variant     After a list of candidates is produced, scored and sorted,
+ *              "variant" is used to index that list and choose a voice.
+ *              variant=0 takes the top voice (i.e. best match), variant=1
+ *              takes the next voice, etc
+ *
+ *  Return: espeak.EE_OK: operation achieved 
+ *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+ *              try to call the function again after a while.
+ *	        espeak.EE_INTERNAL_ERROR.
+ *
+ */
+
+static int lSetVoiceByProperties(lua_State *L) {
+    espeak_VOICE *v = get_voice(L, 1);
+    lua_pushnumber(L, espeak_SetVoiceByProperties(v));
+    return 1;
+}
+
+
+/*! espeak.GetCurrentVoice()
+ *
+ * Returns a voice table data for the currently selected voice. This is not
+ * affected by temporary voice changes caused by SSML elements such as
+ * <voice> and <s>.
+ *
+ */
+
+static int lGetCurrentVoice(lua_State *L) {
+    espeak_VOICE *v = espeak_GetCurrentVoice();
+    if (v != NULL)
+        push_voice(L, v);
+    else
+        lua_pushnil(L);
+    return 1;
+}
 
 
 /*!! Flush control and cancellation */
@@ -902,7 +1212,7 @@ static int lCancel(lua_State *L) {
 }
 
 
-/*!! espeak.IsPlaying()
+/*! espeak.IsPlaying()
  * Returns 'true' if audio is playing or 'false' otherwise.
  */
 
@@ -912,7 +1222,18 @@ static int lIsPlaying(lua_State *L) {
 }
 
 
-/*!! espeak.Terminate()
+/*! espeak.Synchronize()
+ * This function returns when all data have been spoken. Returns
+ * espeak.EE_OK if the operation was achieved or espeak.EE_INTERNAL_ERROR.
+ */
+
+static int lSynchronize(lua_State *L) {
+    lua_pushboolean(L, espeak_Synchronize());
+    return 1;
+}
+
+
+/*! espeak.Terminate()
  * Last function to be called. Returns espeak.EE_OK if the operation was
  * achieved or espeak.EE_INTERNAL_ERROR.
  */
@@ -931,6 +1252,16 @@ static const luaL_reg funcs[] = {
 #endif
     { "Key", lKey },
     { "Char", lChar },
+    { "SetParameter", lSetParameter },
+    { "GetParameter", lGetParameter },
+    { "SetPunctuationList", lSetPunctuationList },
+    { "SetPhonemeTrace", lSetPhonemeTrace },
+    { "CompileDictionary", lCompileDictionary },
+    { "ListVoices", lListVoices },
+    { "SetVoiceByName", lSetVoiceByName },
+    { "SetVoiceByProperties", lSetVoiceByProperties },
+    { "GetCurrentVoice", lGetCurrentVoice },
+    { "Synchronize", lSynchronize },
     { "Cancel", lCancel },
     { "IsPlaying", lIsPlaying },
     { "Terminate", lTerminate },
