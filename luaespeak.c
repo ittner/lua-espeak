@@ -20,6 +20,15 @@
  */
 
 
+/*
+ * TODO: Protect the library agains double initialization/termination.
+ * TODO: Do a better handler for callbacks.
+ * TODO: Are these globals secure?
+ * TODO: Why SynthMark uses C++ name mangling?
+ * TODO: Fix the "magic" documentation.
+ */
+
+
 #include <lua.h>
 #include <lauxlib.h>
 
@@ -42,6 +51,15 @@
     lua_settable(L, -3);
 
 #define checkfile(L, i) (*(FILE **) luaL_checkudata(L, i, LUA_FILEHANDLE))
+
+
+
+/* Internal library controls */
+static int ctr_terminated = 0;  /* Was espeak.Terminate() called? */
+static int ref_synth_callback = LUA_NOREF;  /* Reference to URI callback */
+static int ref_uri_callback = LUA_NOREF;    /* Reference to Synth callback */
+static lua_State *callback_state = NULL;    /* Pass states to callbacks */
+
 
 
 /* Prototypes */
@@ -730,12 +748,190 @@ static int lInitialize(lua_State *L) {
 
     lua_pushnumber(L, espeak_Initialize(luaL_checknumber(L, 1),
         luaL_checknumber(L, 2), path));
+
+    ctr_terminated = 0;
+    ref_synth_callback = LUA_NOREF;
+    ref_uri_callback = LUA_NOREF;
+
     return 1;
 }
 
 
 
- /************ CALLBACKS HERE *************/
+/*! espeak.SetSynthCallback(callback_function)
+ *
+ * Must be called before any synthesis functions are called. This specifies
+ * a function in the calling program which is called when a buffer of speech
+ * sound data has been produced. 
+ * 
+ *  The callback function is of the form:
+ *  
+ *      function callback(wave, events)
+ *          ...
+ *          ...
+ *          return false     -- or true.
+ *      end
+ *
+ *
+ * Where 'wave' is a string with the speech sound data which has been
+ * produced. 'nil' indicates that the synthesis has been completed. And empty
+ * string  does NOT indicate end of synthesis. 'events' is a table with items
+ * which indicate word and sentence events, and  also the occurance if <mark>
+ * and <audio> elements within the text. Valid elements are:
+ *
+ *      type: The event type, that must be espeak.EVENT_LIST_TERMINATED,
+ *            EVENT_WORD, EVENT_SENTENCE, EVENT_MARK, EVENT_PLAY, EVENT_END
+ *            or EVENT_MSG_TERMINATED.
+ *      
+ *      unique_identifier: The integer id passed from Synth function, if any.
+ *
+ *      text_position: The number of characters from the start of the text.
+ *  
+ *      length: For espeak.EVENT_WORD, the word length, in characters.
+ *      
+ *      audio_position: The time in mS within the generated output data.
+ *
+ *      id: a number for WORD and SENTENCE events or a UTF8 string for MARK
+ *          and PLAY events.
+ *
+ * Callback functions must return 'false' to continue synthesis or 'true' to
+ * abort.
+ *
+ */
+
+static int synth_callback(short *wav, int numsamples, espeak_EVENT *events) {
+    int rval = 0;
+
+    if (ref_synth_callback == LUA_NOREF || callback_state == NULL)
+        return 0;   /* No callback defined. Continue synthesis. */
+
+    /* Pushes the function. */
+    lua_rawgeti(callback_state, LUA_REGISTRYINDEX, ref_synth_callback);
+
+    if (lua_isnil(callback_state, -1)
+    || lua_type(callback_state, -1) != LUA_TFUNCTION) {
+        lua_pop(callback_state, 1);
+        return 1;  /* A bad value was found instead of a function. Stops. */
+    }
+
+    /* Push the arguments. */
+    lua_pushlstring(callback_state, (void*) wav, numsamples * sizeof(short));
+    push_event(callback_state, events);
+
+    if (lua_pcall(callback_state, 2, 1, 0) != 0) {
+        lua_pop(callback_state, 1); /* Ignore error message. */
+        return 1;   /* Error. Stop synthesis. */
+    }
+
+    rval = lua_toboolean(callback_state, -1);
+    lua_pop(callback_state, 1);
+    return rval;
+}
+
+
+static int lSetSynthCallback(lua_State *L) {
+    if (lua_isnil(L, 1)) {
+        espeak_SetSynthCallback(NULL);
+        if (ref_synth_callback != LUA_NOREF) {
+            luaL_unref(L, LUA_REGISTRYINDEX, ref_synth_callback);
+            ref_synth_callback = LUA_NOREF;
+        }
+        return 0;
+    }
+
+    luaL_checktype(L, 1, LUA_TFUNCTION);
+    ref_synth_callback = luaL_ref(L, LUA_REGISTRYINDEX);
+    callback_state = L;
+    espeak_SetSynthCallback(synth_callback);
+    return 0;
+}
+
+
+
+
+/*! espeak.SetUriCallback(callback_function)
+ *
+ * This function must be called before synthesis functions are used, in
+ * order to deal with <audio> tags. It specifies a callback function which
+ * is called when an <audio> element is encountered and allows the calling
+ * program to indicate whether the sound file which is specified in the
+ * <audio> element is available and is to be played.
+ *
+ * The callback function is of the form:
+ *
+ *      function callback(type, uri, base)
+ *          ...
+ *          ...
+ *          return false     -- or true.
+ *      end
+ *
+ * Where:
+ *
+ * 'type' is type of callback event. Currently only 1 = <audio> element.
+ * 'uri' is the "src" attribute from the <audio> element, a string.
+ * 'base' is the "xml:base" attribute (if any) from the <speak> element
+ *
+ * The callback function must return 'true' to don't play the sound, but
+ * speak the text alternative or 'false' to place a PLAY event in the event
+ * list at the point where the <audio> element occurs. The calling program
+ * can then play the sound at that point.
+ *
+ */
+
+
+static int uri_callback(int type, const char *uri, const char *base) {
+    int rval = 0;
+
+    if (ref_uri_callback == LUA_NOREF || callback_state == NULL)
+        return 0;   /* No callback defined. Continue synthesis. */
+
+    /* Pushes the function. */
+    lua_rawgeti(callback_state, LUA_REGISTRYINDEX, ref_uri_callback);
+
+    if (lua_isnil(callback_state, -1)
+    || lua_type(callback_state, -1) != LUA_TFUNCTION) {
+        lua_pop(callback_state, 1);
+        return 1;  /* A bad value was found instead of a function. Stops. */
+    }
+
+    /* Push the arguments. */
+    lua_pushinteger(callback_state, type);
+    lua_pushstring(callback_state, uri);
+    if (base)
+        lua_pushstring(callback_state, base);
+    else
+        lua_pushnil(callback_state);
+
+    if (lua_pcall(callback_state, 3, 1, 0) != 0) {
+        lua_pop(callback_state, 1); /* Ignore error message. */
+        return 1;   /* Error. Stop synthesis. */
+    }
+
+    rval = lua_toboolean(callback_state, -1);
+    lua_pop(callback_state, 1);
+    return rval;
+}
+
+
+static int lSetUriCallback(lua_State *L) {
+    if (lua_isnil(L, 1)) {
+        espeak_SetUriCallback(NULL);
+        if (ref_uri_callback != LUA_NOREF) {
+            luaL_unref(L, LUA_REGISTRYINDEX, ref_uri_callback);
+            ref_uri_callback = LUA_NOREF;
+        }
+        return 0;
+    }
+
+    luaL_checktype(L, 1, LUA_TFUNCTION);
+    ref_uri_callback = luaL_ref(L, LUA_REGISTRYINDEX);
+    callback_state = L;
+    espeak_SetUriCallback(uri_callback);
+    return 0;
+}
+
+
+
 
 
 /*!! Synthesis */
@@ -1246,6 +1442,8 @@ static int lTerminate(lua_State *L) {
 
 static const luaL_reg funcs[] = {
     { "Initialize", lInitialize },
+    { "SetSynthCallback", lSetSynthCallback },
+    { "SetUriCallback", lSetUriCallback },
     { "Synth", lSynth },
 #ifdef HAS_ESPEAK_SYNTH_MARK
     { "Synth_Mark", lSynth_Mark },
