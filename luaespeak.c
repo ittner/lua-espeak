@@ -41,7 +41,7 @@
 #include "speak_lib.h"
 
 #define LIB_NAME        "espeak"
-#define LIB_VERSION     LIB_NAME " r1"
+#define LIB_VERSION     LIB_NAME " 1.20r1"
 
 
 /* Table assumed on top */
