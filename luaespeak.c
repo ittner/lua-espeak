@@ -41,7 +41,7 @@
 #include "speak_lib.h"
 
 #define LIB_NAME        "espeak"
-#define LIB_VERSION     LIB_NAME " 1.20r1"
+#define LIB_VERSION     LIB_NAME " 1.20r1 alpha"
 
 
 /* Table assumed on top */
@@ -783,7 +783,7 @@ static int lInitialize(lua_State *L) {
  *            EVENT_WORD, EVENT_SENTENCE, EVENT_MARK, EVENT_PLAY, EVENT_END
  *            or EVENT_MSG_TERMINATED.
  *      
- *      unique_identifier: The integer id passed from Synth function, if any.
+ *      unique_identifier: The integer id passed from Synth function.
  *
  *      text_position: The number of characters from the start of the text.
  *  
@@ -936,7 +936,7 @@ static int lSetUriCallback(lua_State *L) {
 
 /*!! Synthesis */
 
-/*! espeak.Synth(text, position, position_type, end_position, flags, unique_identifier) 
+/*! espeak.Synth(text, position, position_type, end_position, flags) 
  *
  * Synthesize speech for the specified text.  The speech sound data is passed
  * to the calling program in buffers by means of the callback function
@@ -972,13 +972,10 @@ static int lSetUriCallback(lua_State *L) {
  *     espeak.ENDPAUSE  If set then a sentence pause is added at the end of
  *          the text.  If not set then this pause is suppressed.
  *
- * 'unique_identifier' is a ineteger message identifier; helpful for
- * identifying later  data supplied to the callback.
  *
- *  Return: espeak.EE_OK: operation achieved 
- *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
- *              try to call the function again after a while.
- *	        espeak.EE_INTERNAL_ERROR.
+ * This function returns two values: the status of the operation (espeak.EE_OK,
+ * espeak.EE_BUFFER_FULL or espeak.EE_INTERNAL_ERROR) and an unique integer
+ * that will also be passed to the callback function (if any).
  *
  */
 
@@ -1007,13 +1004,11 @@ static int lSynth(lua_State *L) {
     if (!lua_isnil(L, 5))
         flags = (int) lua_tonumber(L, 5);
 
-    if (!lua_isnil(L, 6))
-        id = (int) lua_tonumber(L, 6);
-    
     lua_pushnumber(L, espeak_Synth(text, size, position, ptype, end_position,
         flags, &id, NULL));
+    lua_pushinteger(L, id);
 
-    return 1;
+    return 2;
 }
 
 
