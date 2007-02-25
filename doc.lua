@@ -3,7 +3,7 @@ require "docparse"
 print [[
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<!-- Ggenerated code -- do no modify. -->
+<!-- Generated code -- do no modify -->
 
 <html>
  <head>
@@ -199,7 +199,7 @@ the same eSpeak version. </p>
 under the <a href="http://www.fsf.org/licensing/licenses/gpl.html">GNU General
 Public License</a> version 2 or, at your option, any later version. It can be
 used for both academic and commercial purpouses. <b>BUT</b>, if you
-redistribute the library, you must make all source code linnking against
+redistribute the library, you must make all source code linking against
 this library and Lua interpreter available under the GPL too; This not
 includes your Lua code. More precisely: </p>
 
@@ -276,8 +276,8 @@ print [[
 
 <a name="examples.thering"></a>
 <h3>A simple speech</h3>
-<p> This program utters a phrase and quits. You can heard the resulting
-audio <a href="ring.wav">here</a>. </p>
+<p> This program utters a phrase and quits. You can listen to the resulting
+audio <a href="ring.mp3">here</a>. </p>
 
 
 <pre class="example2">]]
@@ -289,8 +289,8 @@ print [[</pre>
 
 <a name="examples.voices"></a>
 <h3>Changing the voice</h3>
-<p> This program speaks with some voices available in eSpeak. You can heard
-the resulting audio <a href="voices.wav">here</a>. </p>
+<p> This program speaks with some voices available in eSpeak. You can listen
+to the resulting audio <a href="voices.mp3">here</a>. </p>
 
 <pre class="example2">]]
 
@@ -301,8 +301,8 @@ print [[</pre>
 <a name="examples.saytime"></a>
 <h3>Telling the time</h3>
 <p> This program speaks the current time in the "spoken" (informal) Brazilian
-Portuguese. You can heard the resulting audio
-<a href="saytime.wav">here</a>. </p>
+Portuguese. You can listen to the resulting audio
+<a href="saytime.mp3">here</a>. </p>
 
 <pre class="example2">]]
 

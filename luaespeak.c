@@ -1141,7 +1141,7 @@ static int lSetParameter(lua_State *L) {
 
 
 
-/*! espeak.GetParameter(parameter, current);
+/*! espeak.GetParameter(parameter, current)
  *
  * Returns synthesis parameters. 'current' is a boolean that tells the
  * function to return the current value, instead of the default one.
@@ -1160,7 +1160,7 @@ static int lGetParameter(lua_State *L) {
 
 
 
-/*! espeak.SetPunctuationList(punctlist);
+/*! espeak.SetPunctuationList(punctlist)
  *
  * Specified a list of punctuation characters whose names are to be spoken
  * when the value of the Punctuation parameter is set to "some". 'punctlist'
@@ -1219,7 +1219,7 @@ static int lSetPunctuationList(lua_State *L) {
 
 
 
-/*! espeak.SetPhonemeTrace(value, filehandle);
+/*! espeak.SetPhonemeTrace(value, filehandle)
  *
  * Controls the output of phoneme symbols for the text.
  *
@@ -1248,7 +1248,7 @@ static int lSetPhonemeTrace(lua_State *L) {
 
     
 
-/*! espeak.CompileDictionary(path, filehandle);
+/*! espeak.CompileDictionary(path, filehandle)
  *
  * Compile pronunciation dictionary for a language which corresponds to the
  * currently selected voice. The required voice should be selected before
