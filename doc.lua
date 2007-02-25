@@ -1,14 +1,19 @@
 #!/usr/bin/env lua
 
---
---
---
---
+-- Makes documentation for lua-eSpeak.
 
+module("doc", package.seeall)
 
-local function parse(ifp, ofp)
-    local tag
-    local mark, spaces, text, ending
+local function escape(str)
+    str = tostring(str)
+    str = str:gsub("&", "&amp;")
+    str = str:gsub("<", "&lt;")
+    str = str:gsub(">", "&gt;")
+    return str
+end
+
+function parse(ifp, ofp)
+    local tag, mark, text, ending
 
     for line in ifp:lines() do
         if tag == nil then
@@ -28,36 +33,16 @@ local function parse(ifp, ofp)
                 if ending then
                     tag = nil
                 else
-                    tag = "p"
-                    txout = nil
-                    ofp:write("<p>\n")
+                    tag = "pre"
+                    ofp:write("<", tag, ">")
                 end
             end
         elseif line:match("%s*%*/") then
             ofp:write("</", tag, ">\n")
             tag = nil
         else
-            mark, spaces, text = line:match("%s*(%*)(%s+)(.*)")
-            if text then
-                if spaces:len() > 1 and tag ~= "pre" then
-                    ofp:write("</", tag, ">\n<pre>")
-                    tag = "pre"
-                elseif spaces:len() == 1 and tag == "pre" then
-                    ofp:write("</pre>\n<p>")
-                    tag = "p"
-                end
-                ofp:write(spaces, text, "\n")
-            else
-                mark = line:match("%s*(%*)%s*")
-                ofp:write("</", tag, ">\n<p>")
-                tag = "p"
-            end
+            mark, text = line:match("%s*(%*)%s(.*)")
+            ofp:write(escape(text or ""), "\n")
         end
     end
-
 end
-
-
-
-parse(io.stdin, io.stdout)
-
