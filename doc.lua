@@ -201,7 +201,7 @@ Public License</a> version 2 or, at your option, any later version. It can be
 used for both academic and commercial purpouses. <b>BUT</b>, if you
 redistribute the library, you must make all source code linnking against
 this library and Lua interpreter available under the GPL too; This not
-includes your Lua code. More precisely: </p>s
+includes your Lua code. More precisely: </p>
 
 <blockquote>
 <pre>
