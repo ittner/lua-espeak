@@ -16,11 +16,15 @@ local function saytime(h, m)
         h = h + 1
         if h == 24 then
             return (60 - m) .. " para a meia-noite"
-        elseif h < 12 then
+        elseif h == 1 then
+            return (60 - m) .. " para a uma da manhã"
+        elseif h > 1 and h < 12 then
             return (60 - m) ..  " para as " .. hs[h] .. " da manhã"
         elseif h == 12 then
             return (60 - m) .. " para o meio-dia"
-        elseif h > 12 and h < 19 then
+        elseif h == 13 then
+            return (60 - m) .. " para a uma da tarde"
+        elseif h > 13 and h < 19 then
             return (60 - m) ..  " para as " .. hs[h - 12] .. " da tarde"
         else
             return (60 - m) ..  " para as " .. hs[h - 12] .. " da noite"
@@ -31,18 +35,26 @@ local function saytime(h, m)
                 return "meia-noite e meia"
             elseif h == 12 then
                 return "meio-dia e meio"
+            elseif h > 12 then
+                mt = hs[h - 12] .. " e meia"
             else
                 mt = hs[h] .. " e meia"
             end
         else
             if h == 0 then
-                return "meia-noite e " .. m
+                mt = "meia-noite"
             elseif h == 12 then
-                return "meio-dia e " .. m
+                mt = "meio-dia"
             elseif h > 12 then
-                mt = hs[h - 12] .. " e " .. m
+                mt = hs[h - 12]
             else
-                mt = hs[h] .. " e " .. m
+                mt = hs[h]
+            end
+            if m ~= 0 then
+                mt = mt .. " e " .. m
+            end
+            if h == 0 or h == 12 then
+                return mt
             end
         end
         if h < 12 then
@@ -64,7 +76,7 @@ if espeak.SetVoiceByName("brazil") ~= espeak.EE_OK then
 end
 
 local dt = os.date("*t")
-espeak.Synth("Agora são " .. saytime(dt.hour, dt.min))
+espeak.Synth(saytime(dt.hour, dt.min))
 
 espeak.Synchronize()
 espeak.Terminate()
