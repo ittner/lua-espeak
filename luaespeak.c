@@ -1386,7 +1386,7 @@ static int lGetCurrentVoice(lua_State *L) {
 }
 
 
-/*!! Flush control and cancellation */
+/*!! Flow control */
 
 /*! espeak.Cancel()
  * Stop immediately synthesis and audio output of the current text. When this

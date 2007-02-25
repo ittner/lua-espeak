@@ -93,7 +93,7 @@ local phr = {
 -- Prints and synths a string
 local function say(str)
     print(str)
-    espeak.Synth(str, 0, espeak.POS_WORD, 0, espeak.SSML, 0)
+    espeak.Synth(str, 0, espeak.POS_WORD, 0, espeak.SSML)
 end
 
 
