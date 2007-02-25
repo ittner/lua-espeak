@@ -1,0 +1,919 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!-- Generated code -- do no modify -->
+
+<html>
+ <head>
+  <title>Lua-eSpeak Reference Manual</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <style type="text/css">
+<!--
+H1 {
+    font-family: Verdana, Arial, helvetica, sans-serif;
+    font-size: 18px;
+    color: #000000;
+    background-color: #FFFFFF;
+    text-align: center;
+}    
+
+H2 {
+    font-family: Verdana, Arial, helvetica, sans-serif;
+    font-size: 16px;
+    color: #000000;
+    background-color: #EAEAEA;
+}    
+
+H3 {
+    font-family: Verdana, Arial, helvetica, sans-serif;
+    font-size: 14px;
+    color: #000000;
+    background-color: #EAEAEA;
+}    
+
+H4 {
+    font-family: Verdana, Arial, helvetica, sans-serif;
+    font-size: 12px;
+    color: #000000;
+}    
+
+BODY  {
+    font-family: Verdana, Arial, helvetica, sans-serif;
+    font-size: 12px;
+    color: #000000;
+    background: #FFFFFF;
+}
+
+A {
+    font-family: Verdana, Arial, helvetica, sans-serif;
+    font-size: 12px;
+    color: #000088;
+    text-decoration: none;
+}
+
+A:HOVER {
+    text-decoration: underline;
+    color: #FF0000;
+    background-color: #EAEAEA;
+}
+
+HR {
+    border: 1px solid #EAEAEA;
+}
+
+TABLE {
+    border: 0px;
+}
+
+TR, TD {
+    font-family: Verdana, Arial, helvetica, sans-serif;
+    font-size: 12px;
+    border: 1px solid #EAEAEA;
+    background-color: #FFFFFF;
+    padding: 0px;
+    cell-spacing: 1px;
+}
+
+TR.h, TD.h {
+    text-align: center;
+    font-weight: bold;
+}
+
+TR.i, TD.i {
+    text-align: center;
+}
+
+TR.n, TD.n {
+    font-size: 12px;
+    font-family: "Courier New", courier, monospace;
+}
+
+
+pre
+{
+    font-family: "Courier New", courier, monospace;
+    color: black;
+}
+
+pre.example
+{
+    border: 1px solid rgb(128, 128, 128);
+    padding: 5pt;
+    display: block;
+    font-family: "Courier New", courier, monospace;
+    background-color: #F0F0F0;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+pre.example2
+{
+    border: 1px solid rgb(128, 128, 128);
+    padding: 5pt;
+    display: block;
+    font-family: "Courier New", courier, monospace;
+    background-color: #F0F0F0;
+}
+
+pre.wrong
+{
+    border: gray 1pt solid;
+    padding: 2pt;
+    display: block;
+    font-family: "Courier New", courier, monospace;
+    background-color: #FF0000;
+    color: black;
+}
+
+-->
+ </style>
+</head>
+
+<body>
+
+<center>
+ <a href="http://lua-espeak.luaforge.net"
+  ><img src="lua-espeak.png" alt="Lua-eSpeak Logo" title="Lua-eSpeak logo" border="0"></a>
+ <h1>Lua-eSpeak 1.20r1 alpha</h1>
+ <h1>D R A F T</h1>
+</center>
+
+<h2> Contents </h2>
+<ul>
+ <li><a href="#intro">Introduction</a>
+ <li><a href="#license">Licensing information</a></li>
+ <li><a href="#download">Download and installation</a></li>
+ <li><a href="#load">Library loading and initialization</a></li>
+ <li><a href="#api">API</a>
+   <ul>
+     <li><a href="#api.constants">Constants</a></li>
+     <li><a href="#api.initialization">Initialization</a></li>
+     <li><a href="#api.synthesis">Synthesis</a></li>
+     <li><a href="#api.speech parameters">Speech parameters</a></li>
+     <li><a href="#api.voice selection">Voice selection</a></li>
+     <li><a href="#api.flow control">Flow control</a></li>
+   </ul>
+ </li>
+ <li><a href="#examples">Examples</a>
+   <ul>
+     <li><a href="#examples.thering">A simple speech</a></li>
+     <li><a href="#examples.voices">Changing the voice</a></li>
+     <li><a href="#examples.saytime">Telling the time</a></li>
+     <li><a href="#examples.other">Other examples</a></li>
+   </ul>
+ </li>
+ <li><a href="#contact">Contact information</a></li>
+</ul>
+
+
+<a name="intro"></a>
+<h2>Introduction</h2>
+
+<p><a href="http://espeak.sourceforge.net">eSpeak</a> is a compact open
+source software speech synthesizer for English and other languages. It
+produces good quality English speech using a different synthesis method
+from other open source TTS engines. </p>
+
+<p> Lua-eSpeak is a "binding": a library that exports functions from eSpeak
+to the <ahref="http://www.lua.org">Lua Programming Language</a>, allowing
+you to use eSpeak from Lua. The API was <b>NOT</b> literally exported, but
+changed in a way that make it familiar to Lua users. </p>
+
+<p> Lua-eSpeak is a programming library, not a synthesis program. If you are
+looking for that or are not familiar to the Lua Programming Language, you
+are in the wrong place. </p>
+
+<p><b>A NOTE ON VERSION NUMBERS:</b> Lua-eSpeak version numbers is in the
+format "X.YrZ", where X.Y indicates the eSpeak version and Z the version of
+the binding. So, the <b>1.20r1</b> version is the first binding version for
+eSpeak 1.20 and <b>1.20r2</b> has some improvements/bug fixes/etc. but uses
+the same eSpeak version. </p>
+
+
+<a name="license"></a>
+<h2>Licensing information</h2>
+
+<p> eSpeak and Lua-eSpeak are <em>copyrighted free software</em>, distributed
+under the <a href="http://www.fsf.org/licensing/licenses/gpl.html">GNU General
+Public License</a> version 2 or, at your option, any later version. It can be
+used for both academic and commercial purpouses. <b>BUT</b>, if you
+redistribute the library, you must make all source code linking against
+this library and Lua interpreter available under the GPL too; This not
+includes your Lua code. More precisely: </p>
+
+<blockquote>
+<pre>
+(c) 2007 Alexandre Erwin Ittner &lt;aittner X netuno.com.br&gt;
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+</pre>
+</blockquote>
+
+
+<a name="download"></a>
+<a name="installation"></a>
+<h2>Download and installation</h2>
+
+<p> Lua-eSpeak source code comes in a tar.gz package that can be downloaded
+from the <a href="http://luaforge.net/projects/lua-espeak/">Lua-eSpeak
+project page</a> on <a href="http://www.luaforge.net">LuaForge</a>. There are
+also some pre-compiled binary packages available for Linux and some other
+Unix systems.</p>
+
+<p> After downloading, you need to compile the library. This process requires
+GNU Make, Lua, eSpeak and its dependencies (portaudio, etc.) installed on your
+system. To compile on Unix, just unpack the distribution package, enter the
+directory and type <code>make</code> in your favourite shell. </p>
+
+<p> To install the library with <b>Lua 5.1</b> and above just type
+<code>make install</code>, as root. </p>
+
+<p> <b> WARNING:</b> This will work only in systems with pkg-config (which
+includes the major Linux distributions). In other systems, you will need to
+edit the Makefile and manually install the library, by copying the
+file 'espeak.so' to your Lua binary modules directory.</p>
+
+<p> Compiling Lua-eSpeak on Windows systems is possible, but I have not
+tried yet. You will need to edit the Makefile by yourself. </p>
+
+<a name="load"></a>
+<h2>Library loading and initialization</h2>
+
+<p> Lua-eSpeak uses the Lua 5.1 package system that allows you to simply do a</p>
+
+<pre class="example">require "espeak"</pre>
+
+<p> call to load up the library. After that, you must call the
+<code>espeak.Initialize</code> function before using the library.</p>
+
+<a name="api"></a>
+
+<a name="api.constants"></a>
+<h2>Constants</h2>
+<a name="api.general information"></a>
+<h3>General information</h3>
+<a name="api.espeak.version"></a>
+<h4>espeak.VERSION</h4>
+<pre>Holds information about library name and version. 
+</pre>
+<a name="api.events"></a>
+<h3>Events</h3>
+<a name="api.espeak.event_list_terminated"></a>
+<h4>espeak.EVENT_LIST_TERMINATED</h4>
+<pre> Retrieval mode: terminates the event list.
+</pre>
+<a name="api.espeak.event_word"></a>
+<h4>espeak.EVENT_WORD</h4>
+<pre> Start of word.
+</pre>
+<a name="api.espeak.event_sentence"></a>
+<h4>espeak.EVENT_SENTENCE</h4>
+<pre> Start of sentence.
+</pre>
+<a name="api.espeak.event_mark"></a>
+<h4>espeak.EVENT_MARK</h4>
+<pre> Mark.
+</pre>
+<a name="api.espeak.event_play"></a>
+<h4>espeak.EVENT_PLAY</h4>
+<pre> Audio element.
+</pre>
+<a name="api.espeak.event_end"></a>
+<h4>espeak.EVENT_END</h4>
+<pre> End of sentence.
+</pre>
+<a name="api.espeak.event_msg_terminated"></a>
+<h4>espeak.EVENT_MSG_TERMINATED</h4>
+<pre> End of message.
+</pre>
+<a name="api.positions"></a>
+<h3>Positions</h3>
+<a name="api.espeak.pos_character"></a>
+<h4>espeak.POS_CHARACTER</h4>
+<a name="api.espeak.pos_word"></a>
+<h4>espeak.POS_WORD</h4>
+<a name="api.espeak.pos_sentence"></a>
+<h4>espeak.POS_SENTENCE</h4>
+<a name="api.audio output"></a>
+<h3>Audio output</h3>
+<a name="api.espeak.audio_output_playback"></a>
+<h4>espeak.AUDIO_OUTPUT_PLAYBACK</h4>
+<pre> PLAYBACK mode: plays the audio data, supplies events to the
+ calling program.
+</pre>
+<a name="api.espeak.audio_output_retrieval"></a>
+<h4>espeak.AUDIO_OUTPUT_RETRIEVAL</h4>
+<pre> RETRIEVAL mode: supplies audio data and events to the calling program.
+</pre>
+<a name="api.espeak.audio_output_synchronous"></a>
+<h4>espeak.AUDIO_OUTPUT_SYNCHRONOUS</h4>
+<pre> SYNCHRONOUS mode: as RETRIEVAL but doesn't return until synthesis is    
+ completed.
+</pre>
+<a name="api.errors and status"></a>
+<h3>Errors and status</h3>
+<a name="api.espeak.ee_ok"></a>
+<h4>espeak.EE_OK</h4>
+<a name="api.espeak.ee_internal_error"></a>
+<h4>espeak.EE_INTERNAL_ERROR</h4>
+<a name="api.espeak.ee_buffer_full"></a>
+<h4>espeak.EE_BUFFER_FULL</h4>
+<a name="api.synthesis"></a>
+<h3>Synthesis</h3>
+<a name="api.espeak.chars_auto"></a>
+<h4>espeak.CHARS_AUTO</h4>
+<a name="api.espeak.chars_utf8"></a>
+<h4>espeak.CHARS_UTF8</h4>
+<a name="api.espeak.chars_8bit"></a>
+<h4>espeak.CHARS_8BIT</h4>
+<a name="api.espeak.chars_wchar"></a>
+<h4>espeak.CHARS_WCHAR</h4>
+<a name="api.espeak.ssml"></a>
+<h4>espeak.SSML</h4>
+<a name="api.espeak.phonemes"></a>
+<h4>espeak.PHONEMES</h4>
+<a name="api.espeak.endpause"></a>
+<h4>espeak.ENDPAUSE</h4>
+<a name="api.espeak.keep_namedata"></a>
+<h4>espeak.KEEP_NAMEDATA</h4>
+<a name="api.parameters"></a>
+<h3>Parameters</h3>
+<a name="api.espeak.rate"></a>
+<h4>espeak.RATE</h4>
+<a name="api.espeak.volume"></a>
+<h4>espeak.VOLUME</h4>
+<a name="api.espeak.pitch"></a>
+<h4>espeak.PITCH</h4>
+<a name="api.espeak.range"></a>
+<h4>espeak.RANGE</h4>
+<a name="api.espeak.punctuation"></a>
+<h4>espeak.PUNCTUATION</h4>
+<a name="api.espeak.capitals"></a>
+<h4>espeak.CAPITALS</h4>
+<a name="api.punctuation"></a>
+<h3>Punctuation</h3>
+<a name="api.espeak.punct_none"></a>
+<h4>espeak.PUNCT_NONE</h4>
+<a name="api.espeak.punct_all"></a>
+<h4>espeak.PUNCT_ALL</h4>
+<a name="api.espeak.punct_some"></a>
+<h4>espeak.PUNCT_SOME</h4>
+<a name="api.functions"></a>
+<h2>Functions</h2>
+<a name="api.initialization"></a>
+<h3>Initialization</h3>
+<a name="api.espeak.initialize(audio_output, buflength, path)"></a>
+<h4>espeak.Initialize(audio_output, buflength, path)</h4>
+<pre>
+Must be called before any synthesis functions are called.
+
+'audio_output' is the audio data can either be played by eSpeak or passed
+ back by the SynthCallback function.
+
+'buflength' is the length (in mS) of sound buffers passed to the
+SynthCallback function.
+
+'path' is the directory which contains the espeak-data directory, or nil
+for the default location.
+
+This function returns the sample rate in Hz.
+
+</pre>
+<a name="api.espeak.setsynthcallback(callback_function)"></a>
+<h4>espeak.SetSynthCallback(callback_function)</h4>
+<pre>
+Must be called before any synthesis functions are called. This specifies
+a function in the calling program which is called when a buffer of speech
+sound data has been produced. 
+
+The callback function is of the form:
+ 
+     function callback(wave, events)
+         ...
+         ...
+         return false     -- or true.
+     end
+
+
+Where 'wave' is a string with the speech sound data which has been
+produced. 'nil' indicates that the synthesis has been completed. And empty
+string  does NOT indicate end of synthesis. 'events' is a table with items
+which indicate word and sentence events, and  also the occurance if &lt;mark&gt;
+and &lt;audio&gt; elements within the text. Valid elements are:
+
+     type: The event type, that must be espeak.EVENT_LIST_TERMINATED,
+           EVENT_WORD, EVENT_SENTENCE, EVENT_MARK, EVENT_PLAY, EVENT_END
+           or EVENT_MSG_TERMINATED.
+     
+     unique_identifier: The integer id passed from Synth function.
+
+     text_position: The number of characters from the start of the text.
+ 
+     length: For espeak.EVENT_WORD, the word length, in characters.
+     
+     audio_position: The time in mS within the generated output data.
+
+     id: a number for WORD and SENTENCE events or a UTF8 string for MARK
+         and PLAY events.
+
+Callback functions must return 'false' to continue synthesis or 'true' to
+abort.
+
+</pre>
+<a name="api.espeak.seturicallback(callback_function)"></a>
+<h4>espeak.SetUriCallback(callback_function)</h4>
+<pre>
+This function must be called before synthesis functions are used, in
+order to deal with &lt;audio&gt; tags. It specifies a callback function which
+is called when an &lt;audio&gt; element is encountered and allows the calling
+program to indicate whether the sound file which is specified in the
+&lt;audio&gt; element is available and is to be played.
+
+The callback function is of the form:
+
+     function callback(type, uri, base)
+         ...
+         ...
+         return false     -- or true.
+     end
+
+Where:
+
+'type' is type of callback event. Currently only 1 = &lt;audio&gt; element.
+'uri' is the "src" attribute from the &lt;audio&gt; element, a string.
+'base' is the "xml:base" attribute (if any) from the &lt;speak&gt; element
+
+The callback function must return 'true' to don't play the sound, but
+speak the text alternative or 'false' to place a PLAY event in the event
+list at the point where the &lt;audio&gt; element occurs. The calling program
+can then play the sound at that point.
+
+</pre>
+<a name="api.synthesis"></a>
+<h3>Synthesis</h3>
+<a name="api.espeak.synth(text, position, position_type, end_position, flags)"></a>
+<h4>espeak.Synth(text, position, position_type, end_position, flags)</h4>
+<pre>
+Synthesize speech for the specified text.  The speech sound data is passed
+to the calling program in buffers by means of the callback function
+specified by espeak.SetSynthCallback(). The command is asynchronous: it
+is internally buffered and returns as soon as possible. If
+espeak.Initialize() was previously called with espeak.AUDIO_OUTPUT_PLAYBACK
+as argument, the sound data are played by eSpeak.
+
+'text' is a string with the text to be spoken.  It may be either 8-bit
+characters,  wide characters, or UTF8 encoding. Which of these is
+determined by the 'flags' parameter.
+
+'position' is the position in the text where speaking starts. Zero or nil
+indicates speak from the start of the text.
+
+'position_type' determines whether "position" is a number of characters,
+words, or sentences. Valied values are espeak.POS_CHARACTER, 
+espeak.POS_WORD or espeak.POS_SENTENCE.
+
+'end_position', if set, this gives a character position at which speaking
+will stop.  A value of zero or nil indicates no end position.
+
+'flags': These may be added together:
+    Type of character codes, one of: espeak.CHARS_UTF8, espeak.CHARS_8BIT,
+         espeak.CHARS_AUTO (default) or espeak.CHARS_WCHAR.
+
+    espeak.SSML   Elements within &lt; &gt; are treated as SSML elements, or if
+         not recognised are ignored.
+
+    espeak.PHONEMES  Text within [[ ]] is treated as phonemes codes (in
+         espeak's Hirschenbaum encoding).
+
+    espeak.ENDPAUSE  If set then a sentence pause is added at the end of
+         the text.  If not set then this pause is suppressed.
+
+
+This function returns two values: the status of the operation (espeak.EE_OK,
+espeak.EE_BUFFER_FULL or espeak.EE_INTERNAL_ERROR) and an unique integer
+that will also be passed to the callback function (if any).
+
+</pre>
+<a name="api.espeak.synth_mark(text, index_mark, end_position, flags)"></a>
+<h4>espeak.Synth_Mark(text, index_mark, end_position, flags)</h4>
+<pre>
+Synthesize speech for the specified text. Similar to espeak.Synth() but
+the start position is specified by the name of a &lt;mark&gt; element in the
+text.
+
+'index_mark' is the "name" attribute of a &lt;mark&gt; element within the text
+ which specified the point at which synthesis starts. it must be an UTF8
+ string.
+
+ For the other parameters, see espeak.Synth()
+
+This function returns two values: the status of the operation (espeak.EE_OK,
+espeak.EE_BUFFER_FULL or espeak.EE_INTERNAL_ERROR) and an unique integer
+that will also be passed to the callback function (if any).
+</pre>
+<a name="api.espeak.key(key_name)"></a>
+<h4>espeak.Key(key_name)</h4>
+<pre>
+Speak the name of a keyboard key. Currently, this just speaks the
+'key_name', given as a string.
+
+ Return: espeak.EE_OK: operation achieved 
+         espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+             try to call the function again after a while.
+        espeak.EE_INTERNAL_ERROR.
+</pre>
+<a name="api.espeak.char(character_code)"></a>
+<h4>espeak.Char(character_code)</h4>
+<pre>
+Speak the name of the character, given as a 16 bit integer.
+
+ Return: espeak.EE_OK: operation achieved 
+         espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+             try to call the function again after a while.
+        espeak.EE_INTERNAL_ERROR.
+</pre>
+<a name="api.speech parameters"></a>
+<h3>Speech parameters</h3>
+<a name="api.espeak.setparameter(parameter, value, relative)"></a>
+<h4>espeak.SetParameter(parameter, value, relative)</h4>
+<pre>
+Sets the value of the specified parameter. 'relative' is a boolean that
+marks the value as relative to the current value.
+
+The following parameters are valid:
+
+     espeak.RATE:    speaking speed in word per minute.
+     espeak.VOLUME:  volume in range 0-100, 0 = silence
+     espeak.PITCH:   base pitch in Hz
+     espeak.RANGE:   pitch range in Hz
+
+     epeak.PUNCTUATION:  which punctuation characters to announce:
+        value in espeak_PUNCT_TYPE (none, all, some), 
+ see espeak_GetParameter() to specify which characters are announced.
+
+     espeak.CAPITALS: announce capital letters by:
+        0=none,
+        1=sound icon,
+        2=spelling,
+        3 or higher, by raising pitch.  This values gives the amount
+             in Hz by which the pitch of a word raised to indicate it
+             has a capital letter.
+
+ Return: espeak.EE_OK: operation achieved 
+         espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+             try to call the function again after a while.
+        espeak.EE_INTERNAL_ERROR.
+</pre>
+<a name="api.espeak.getparameter(parameter, current)"></a>
+<h4>espeak.GetParameter(parameter, current)</h4>
+<pre>
+Returns synthesis parameters. 'current' is a boolean that tells the
+function to return the current value, instead of the default one.
+
+</pre>
+<a name="api.espeak.setpunctuationlist(punctlist)"></a>
+<h4>espeak.SetPunctuationList(punctlist)</h4>
+<pre>
+Specified a list of punctuation characters whose names are to be spoken
+when the value of the Punctuation parameter is set to "some". 'punctlist'
+is a array of character codes (as integers). 
+
+</pre>
+<a name="api.espeak.setphonemetrace(value, filehandle)"></a>
+<h4>espeak.SetPhonemeTrace(value, filehandle)</h4>
+<pre>
+Controls the output of phoneme symbols for the text.
+
+ value=0  No phoneme output (default)
+ value=1  Output the translated phoneme symbols for the text
+ value=2  as (1), but also output a trace of how the translation was done
+          (matching rules and list entries)
+
+'filehandle' is the output stream for the phoneme symbols (and trace). If
+nil then it uses io.stdout.
+
+This function returns no values.
+
+</pre>
+<a name="api.espeak.compiledictionary(path, filehandle)"></a>
+<h4>espeak.CompileDictionary(path, filehandle)</h4>
+<pre>
+Compile pronunciation dictionary for a language which corresponds to the
+currently selected voice. The required voice should be selected before
+calling this function.
+
+'path' is the directory which contains the language's "_rules" and
+ "_list" files. 'path' should end with a path separator character ('/').
+
+'filehandle' is the output stream for error reports and statistics
+information. If nil, then io.stderr will be used.
+
+This function returns no values.
+
+</pre>
+<a name="api.voice selection"></a>
+<h3>Voice Selection</h3>
+<a name="api.espeak.listvoices(voice_spec)"></a>
+<h4>espeak.ListVoices(voice_spec)</h4>
+<pre>
+Reads the voice files from espeak-data/voices and creates an array of
+voice tables. If 'voice_spec' is given, then only the voices which are
+compatible with the 'voice_spec' are listed, and they are listed in
+preference order.
+
+</pre>
+<a name="api.espeak.setvoicebyname(name)"></a>
+<h4>espeak.SetVoiceByName(name)</h4>
+<pre>
+Searches for a voice with a matching "name" field.  Language is not
+considered. "name" is a UTF8 string.
+
+ Return: espeak.EE_OK: operation achieved 
+         espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+             try to call the function again after a while.
+        espeak.EE_INTERNAL_ERROR.
+
+</pre>
+<a name="api.espeak.setvoicebyproperties(voice_spec)"></a>
+<h4>espeak.SetVoiceByProperties(voice_spec)</h4>
+<pre>
+An voice table is used to pass criteria to select a voice. Any of the
+following fields may be set:
+
+ name        nil or a voice name
+
+ languages   nil or a single language string (with optional dialect), eg.
+             "en-uk", or "en"
+
+ gender      0 or nil = not specified, 1 = male, 2 = female
+
+ age         0 or nil = not specified, or an age in years
+
+ variant     After a list of candidates is produced, scored and sorted,
+             "variant" is used to index that list and choose a voice.
+             variant=0 takes the top voice (i.e. best match), variant=1
+             takes the next voice, etc
+
+ Return: espeak.EE_OK: operation achieved 
+         espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
+             try to call the function again after a while.
+        espeak.EE_INTERNAL_ERROR.
+
+</pre>
+<a name="api.espeak.getcurrentvoice()"></a>
+<h4>espeak.GetCurrentVoice()</h4>
+<pre>
+Returns a voice table data for the currently selected voice. This is not
+affected by temporary voice changes caused by SSML elements such as
+&lt;voice&gt; and &lt;s&gt;.
+
+</pre>
+<a name="api.flow control"></a>
+<h3>Flow control</h3>
+<a name="api.espeak.cancel()"></a>
+<h4>espeak.Cancel()</h4>
+<pre>Stop immediately synthesis and audio output of the current text. When this
+function returns, the audio output is fully stopped and the synthesizer is
+ready to synthesize a new message. This function returns espeak.EE_OK if
+the operation was achieved or espeak.EE_INTERNAL_ERROR.
+</pre>
+<a name="api.espeak.isplaying()"></a>
+<h4>espeak.IsPlaying()</h4>
+<pre>Returns 'true' if audio is playing or 'false' otherwise.
+</pre>
+<a name="api.espeak.synchronize()"></a>
+<h4>espeak.Synchronize()</h4>
+<pre>This function returns when all data have been spoken. Returns
+espeak.EE_OK if the operation was achieved or espeak.EE_INTERNAL_ERROR.
+</pre>
+<a name="api.espeak.terminate()"></a>
+<h4>espeak.Terminate()</h4>
+<pre>Last function to be called. Returns espeak.EE_OK if the operation was
+achieved, espeak.EE_INTERNAL_ERROR or errors or nil if the function was
+called more then once.
+</pre>
+<a name="examples"></a>
+<h2>Examples</h2>
+
+
+<a name="examples.thering"></a>
+<h3>A simple speech</h3>
+<p> This program utters a phrase and quits. You can listen to the resulting
+audio <a href="ring.mp3">here</a>. </p>
+
+
+<pre class="example2">
+
+require "espeak"
+
+local text = "One Ring to rule them all."
+
+espeak.Initialize(espeak.AUDIO_OUTPUT_PLAYBACK, 500)
+
+if espeak.SetVoiceByName("english") ~= espeak.EE_OK then
+    print("Failed to set default voice.")
+    return
+end
+
+espeak.Synth(text, 0, espeak.POS_WORD, 0, nil)
+
+espeak.Synchronize()
+espeak.Terminate()
+
+</pre>
+
+
+<a name="examples.voices"></a>
+<h3>Changing the voice</h3>
+<p> This program speaks with some voices available in eSpeak. You can listen
+to the resulting audio <a href="voices.mp3">here</a>. </p>
+
+<pre class="example2">
+
+require "espeak"
+
+espeak.Initialize(espeak.AUDIO_OUTPUT_PLAYBACK, 0)
+
+local langs = {
+    { "pt-br", "Português brasileiro" },
+    { "pt", "Português Europeu" },
+    { "en-gb", "British English" },
+    { "en-us", "American English" },
+    { "de", "Deutsch"  },
+    { "eo", "Esperanto" },
+    { "it", "Italiano" },
+    { "es", "Español" },
+    { "fi", "Suomi" }
+}
+
+for _, l in ipairs(langs) do
+    if espeak.SetVoiceByProperties({ languages = l[1] }) == espeak.EE_OK then
+        espeak.Synth(l[2])
+    end
+    espeak.Synchronize()
+end
+
+espeak.Terminate()
+</pre>
+
+<a name="examples.saytime"></a>
+<h3>Telling the time</h3>
+<p> This program speaks the current time in the "spoken" (informal) Brazilian
+Portuguese. You can listen to the resulting audio
+<a href="saytime.mp3">here</a>. </p>
+
+<pre class="example2">
+-- -*- coding: utf-8 -*-
+--
+-- Functions to "say" the time of the day.
+-- (c) 2007 Alexandre Erwin Ittner &lt;aittner@netuno.com.br&gt;
+--
+-- This file is part of Lua-eSpeak and is distributed under the GNU GPL v2
+-- or, at your option, any later version.
+--
+--
+
+module("saytime", package.seeall)
+
+-- Spoken Portuguese
+
+local pt_hs = { "uma", "duas", "três", "quatro", "cinco", "seis", "sete",
+    "oito", "nove", "dez", "onze" }
+
+function pt_spoken(h, m)
+    local mt
+    if m &gt; 30 then
+        h = h + 1
+        if h == 24 then
+            return (60 - m) .. " para a meia-noite"
+        elseif h == 1 then
+            return (60 - m) .. " para a uma da manhã"
+        elseif h &gt; 1 and h &lt; 12 then
+            return (60 - m) ..  " para as " .. pt_hs[h] .. " da manhã"
+        elseif h == 12 then
+            return (60 - m) .. " para o meio-dia"
+        elseif h == 13 then
+            return (60 - m) .. " para a uma da tarde"
+        elseif h &gt; 13 and h &lt; 19 then
+            return (60 - m) ..  " para as " .. pt_hs[h - 12] .. " da tarde"
+        else
+            return (60 - m) ..  " para as " .. pt_hs[h - 12] .. " da noite"
+        end
+    else
+        if m == 30 then
+            if h == 0 then
+                return "meia-noite e meia"
+            elseif h == 12 then
+                return "meio-dia e meio"
+            elseif h &gt; 12 then
+                mt = pt_hs[h - 12] .. " e meia"
+            else
+                mt = pt_hs[h] .. " e meia"
+            end
+        else
+            if h == 0 then
+                mt = "meia-noite"
+            elseif h == 12 then
+                mt = "meio-dia"
+            elseif h &gt; 12 then
+                mt = pt_hs[h - 12]
+            else
+                mt = pt_hs[h]
+            end
+            if m ~= 0 then
+                mt = mt .. " e " .. m
+            end
+            if h == 0 or h == 12 then
+                return mt
+            end
+        end
+        if h &lt; 12 then
+            return mt .. " da manhã"
+        elseif h &gt; 13 and h &lt; 19 then
+            return mt .. " da tarde"
+        else
+            return mt .. " da noite"
+        end
+    end
+end
+
+
+-- Formal portuguese.
+
+function pt_formal(h, m)
+    local hs = ""
+    if h == 0 then
+        hs = "zero hora"
+    elseif h == 1 then
+        hs = "uma hora"
+    else
+        hs = h .. " horas"
+    end
+    if m == 1 then
+        hs = hs .. " e um minuto"
+    elseif m &gt; 1 then
+        hs = hs .. " e " .. m .. "minutos"
+    end
+    return hs
+end
+</pre>
+
+<pre class="example2">
+#!/usr/bin/env lua
+-- -*- coding: utf-8 -*-
+
+-- Says the time of the day as in the spoken Portuguese.
+-- (c) 2007 Alexandre Erwin Ittner &lt;aittner@netuno.com.br&gt;
+-- Distributed under the GPL v2 or later.
+
+require "espeak"
+require "saytime"
+
+espeak.Initialize(espeak.AUDIO_OUTPUT_PLAYBACK, 500)
+
+if espeak.SetVoiceByName("brazil") ~= espeak.EE_OK then
+    print("Impossível localizar a voz correta.")
+    return
+end
+
+local dt = os.date("*t")
+espeak.Synth(saytime.pt_spoken(dt.hour, dt.min))
+
+espeak.Synchronize()
+espeak.Terminate()
+
+</pre>
+
+<a name="examples.other"></a>
+<h3>Other examples</h3>
+<p> There are some useful examples in the <code>demos</code> directory
+within the distribution package. </p>
+
+<a name="contact"></a>
+<h2>Contact information</h2>
+
+<p>
+Author: <b>Alexandre Erwin Ittner</b>
+<br> E-mail: <a href="mailto:aittner#netuno.com.br">aittner<b>#</b>netuno.com.br</a>
+(e-mail obfuscated to avoid spam-bots. Please replace the "#" with an "@").
+
+<br> GnuPG/PGP Key: <a href="http://users.netuno.com.br/aittner/AlexandreErwinIttner.pub.asc">0x0041A1FB</a>
+ (key fingerprint: <code>9B49 FCE2 E6B9 D1AD 6101  29AD 4F6D F114 0041 A1FB</code>).
+<br> Homepage: <a href="http://users.netuno.com.br/aittner/">http://users.netuno.com.br/aittner/</a>.
+<br> Location: Jaraguá do Sul, Santa Catarina, Brazil.
+</p>
+
+</body>
+</html>
+
