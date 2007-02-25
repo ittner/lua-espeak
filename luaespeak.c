@@ -21,11 +21,14 @@
 
 
 /*
- * TODO: Protect the library agains double initialization/termination.
- * TODO: Do a better handler for callbacks.
+ * WARNING: THE FOLLOWING CODE STILLS UNDER DEVELOPMENT AND MUST BE
+ * CONSIDERED AS BETA QUALITY. If you find a bug, please report me. 
+ *
+ * TODO: Do a better handler for callbacks (realy needed?).
  * TODO: Are these globals secure?
  * TODO: Why SynthMark uses C++ name mangling?
- * TODO: Fix the "magic" documentation.
+ * TODO: Make a better "magic" documentation.
+ *
  */
 
 
@@ -51,7 +54,6 @@
     lua_settable(L, -3);
 
 #define checkfile(L, i) (*(FILE **) luaL_checkudata(L, i, LUA_FILEHANDLE))
-
 
 
 /* Internal library controls */
@@ -246,15 +248,6 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
     return ev;
 }
 
-/*
-static void free_event(espeak_EVENT *ev) {
-    if ((ev->type == espeakEVENT_MARK || ev->type == espeakEVENT_PLAY)
-    && ev->id.name) {
-        free(ev->id.name);
-    }
-    free(ev);
-}
-*/
 
 /*
  * The 'languages' field in the voice structure is a bit tricky. A explanation
@@ -749,10 +742,17 @@ static int lInitialize(lua_State *L) {
     lua_pushnumber(L, espeak_Initialize(luaL_checknumber(L, 1),
         luaL_checknumber(L, 2), path));
 
-    ctr_terminated = 0;
-    ref_synth_callback = LUA_NOREF;
-    ref_uri_callback = LUA_NOREF;
+    if (ref_synth_callback != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_synth_callback);
+        ref_synth_callback = LUA_NOREF;
+    }
 
+    if (ref_uri_callback != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_uri_callback);
+        ref_uri_callback = LUA_NOREF;
+    }
+
+    ctr_terminated = 0;
     return 1;
 }
 
@@ -764,7 +764,7 @@ static int lInitialize(lua_State *L) {
  * a function in the calling program which is called when a buffer of speech
  * sound data has been produced. 
  * 
- *  The callback function is of the form:
+ * The callback function is of the form:
  *  
  *      function callback(wave, events)
  *          ...
@@ -959,7 +959,7 @@ static int lSetUriCallback(lua_State *L) {
  * 'end_position', if set, this gives a character position at which speaking
  * will stop.  A value of zero or nil indicates no end position.
  *
- * 'flags':  These may be addedd together:
+ * 'flags': These may be added together:
  *     Type of character codes, one of: espeak.CHARS_UTF8, espeak.CHARS_8BIT,
  *          espeak.CHARS_AUTO (default) or espeak.CHARS_WCHAR.
  *
@@ -1013,7 +1013,7 @@ static int lSynth(lua_State *L) {
 
 
 
-/*! espeak.Synth_Mark(text, index_mark, end_position, flags, unique_identifier)
+/*! espeak.Synth_Mark(text, index_mark, end_position, flags)
  *
  * Synthesize speech for the specified text. Similar to espeak.Synth() but
  * the start position is specified by the name of a <mark> element in the
@@ -1025,10 +1025,9 @@ static int lSynth(lua_State *L) {
  *
  *  For the other parameters, see espeak.Synth()
  *
- *  Return: espeak.EE_OK: operation achieved 
- *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
- *              try to call the function again after a while.
- *	        espeak.EE_INTERNAL_ERROR.
+ * This function returns two values: the status of the operation (espeak.EE_OK,
+ * espeak.EE_BUFFER_FULL or espeak.EE_INTERNAL_ERROR) and an unique integer
+ * that will also be passed to the callback function (if any).
  */
 #ifdef HAS_ESPEAK_SYNTH_MARK
 static int lSynth_Mark(lua_State *L) {
@@ -1050,15 +1049,14 @@ static int lSynth_Mark(lua_State *L) {
     if (!lua_isnil(L, 4))
         flags = (int) lua_tonumber(L, 4);
 
-    if (!lua_isnil(L, 5))
-        id = (int) lua_tonumber(L, 5);
-    
     lua_pushnumber(L, espeak_Synth_Mark(text, size, mark, end_position,
         flags, &id, NULL));
+    lua_pushinteger(L, id);
 
-    return 1;
+    return 2;
 }
 #endif /* HAS_ESPEAK_SYNTH_MARK */
+
 
 /*! espeak.Key(key_name)
  *
@@ -1426,38 +1424,52 @@ static int lSynchronize(lua_State *L) {
 
 /*! espeak.Terminate()
  * Last function to be called. Returns espeak.EE_OK if the operation was
- * achieved or espeak.EE_INTERNAL_ERROR.
+ * achieved, espeak.EE_INTERNAL_ERROR or errors or nil if the function was
+ * called more then once.
  */
 
 static int lTerminate(lua_State *L) {
-    lua_pushboolean(L, espeak_Terminate());
+    if (ref_synth_callback != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_synth_callback);
+        ref_synth_callback = LUA_NOREF;
+    }
+
+    if (ref_uri_callback != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, ref_uri_callback);
+        ref_uri_callback = LUA_NOREF;
+    }
+
+    if (ctr_terminated == 0)
+        lua_pushboolean(L, espeak_Terminate());
+    else
+        lua_pushnil(L);
     return 1;
 }
 
 
 static const luaL_reg funcs[] = {
-    { "Initialize", lInitialize },
-    { "SetSynthCallback", lSetSynthCallback },
-    { "SetUriCallback", lSetUriCallback },
-    { "Synth", lSynth },
+    { "Initialize",         lInitialize },
+    { "SetSynthCallback",   lSetSynthCallback },
+    { "SetUriCallback",     lSetUriCallback },
+    { "Synth",              lSynth },
 #ifdef HAS_ESPEAK_SYNTH_MARK
-    { "Synth_Mark", lSynth_Mark },
+    { "Synth_Mark",         lSynth_Mark },
 #endif
-    { "Key", lKey },
-    { "Char", lChar },
-    { "SetParameter", lSetParameter },
-    { "GetParameter", lGetParameter },
+    { "Key",                lKey },
+    { "Char",               lChar },
+    { "SetParameter",       lSetParameter },
+    { "GetParameter",       lGetParameter },
     { "SetPunctuationList", lSetPunctuationList },
-    { "SetPhonemeTrace", lSetPhonemeTrace },
-    { "CompileDictionary", lCompileDictionary },
-    { "ListVoices", lListVoices },
-    { "SetVoiceByName", lSetVoiceByName },
+    { "SetPhonemeTrace",    lSetPhonemeTrace },
+    { "CompileDictionary",  lCompileDictionary },
+    { "ListVoices",         lListVoices },
+    { "SetVoiceByName",     lSetVoiceByName },
     { "SetVoiceByProperties", lSetVoiceByProperties },
-    { "GetCurrentVoice", lGetCurrentVoice },
-    { "Synchronize", lSynchronize },
-    { "Cancel", lCancel },
-    { "IsPlaying", lIsPlaying },
-    { "Terminate", lTerminate },
+    { "GetCurrentVoice",    lGetCurrentVoice },
+    { "Synchronize",        lSynchronize },
+    { "Cancel",             lCancel },
+    { "IsPlaying",          lIsPlaying },
+    { "Terminate",          lTerminate },
     { NULL, NULL }
 };
 
