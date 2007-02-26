@@ -3,7 +3,7 @@ require "docparse"
 print [[
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<!-- Generated code -- do no modify -->
+<!-- Generated code - do no modify -->
 
 <html>
  <head>
@@ -177,7 +177,7 @@ produces good quality English speech using a different synthesis method
 from other open source TTS engines. </p>
 
 <p> Lua-eSpeak is a "binding": a library that exports functions from eSpeak
-to the <ahref="http://www.lua.org">Lua Programming Language</a>, allowing
+to the <a href="http://www.lua.org/">Lua Programming Language</a>, allowing
 you to use eSpeak from Lua. The API was <b>NOT</b> literally exported, but
 changed in a way that make it familiar to Lua users. </p>
 
@@ -185,11 +185,11 @@ changed in a way that make it familiar to Lua users. </p>
 looking for that or are not familiar to the Lua Programming Language, you
 are in the wrong place. </p>
 
-<p><b>A NOTE ON VERSION NUMBERS:</b> Lua-eSpeak version numbers is in the
+<p><b>A NOTE ON VERSION NUMBERS:</b> Lua-eSpeak version numbers are in the
 format "X.YrZ", where X.Y indicates the eSpeak version and Z the version of
-the binding. So, the <b>1.20r1</b> version is the first binding version for
-eSpeak 1.20 and <b>1.20r2</b> has some improvements/bug fixes/etc. but uses
-the same eSpeak version. </p>
+the binding. So, the version <b>1.20r1</b> is the first version of the
+binding for eSpeak 1.20 and <b>1.20r2</b> has some improvements/bug fixes/etc.
+but uses the same eSpeak version. </p>
 
 
 <a name="license"></a>
