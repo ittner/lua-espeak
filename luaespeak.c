@@ -45,6 +45,8 @@
 #define LIB_NAME        "espeak"
 #define LIB_VERSION     LIB_NAME " 1.20.10r1 alpha"
 
+/* Secure initialization and termination */
+typedef enum { NOT_INITIALIZED, INITIALIZED, TERMINATED } status_info_t;
 
 /* Table assumed on top */
 #define SET_TBL_INT(L, c, v)    \
@@ -56,7 +58,7 @@
 
 
 /* Internal library controls */
-static int ctr_terminated = 0;  /* Was espeak.Terminate() called? */
+static status_info_t lib_status = NOT_INITIALIZED; /* Security */
 static int ref_synth_callback = LUA_NOREF;  /* Reference to URI callback */
 static int ref_uri_callback = LUA_NOREF;    /* Reference to Synth callback */
 static lua_State *callback_state = NULL;    /* Pass states to callbacks */
@@ -250,8 +252,8 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
 
 
 /*
- * The 'languages' field in the voice structure is a bit tricky. A explanation
- * from speak_lib.h follows:
+ * The 'languages' field in the voice structure is a bit tricky. An
+ * explanation from speak_lib.h follows:
  *
  *      Note: The espeak_VOICE structure is used for two purposes:
  *
@@ -718,7 +720,8 @@ static void constants(lua_State *L) {
 
 /*! espeak.Initialize(audio_output, buflength, path)
  *
- * Must be called before any synthesis functions are called.
+ * Must be called before any synthesis functions are called. This function
+ * yells errors if called more then once.
  *
  * 'audio_output' is the audio data can either be played by eSpeak or passed
  *  back by the SynthCallback function.
@@ -735,6 +738,12 @@ static void constants(lua_State *L) {
 
 static int lInitialize(lua_State *L) { 
     const char *path = NULL;
+
+    if (lib_status == INITIALIZED)
+        luaL_error(L, "eSpeak was already initialized.");
+
+    if (lib_status == TERMINATED)
+        luaL_error(L, "eSpeak was already terminated.");
     
     if (!lua_isnil(L, 3))
         path =  lua_tostring(L, 3);
@@ -752,7 +761,7 @@ static int lInitialize(lua_State *L) {
         ref_uri_callback = LUA_NOREF;
     }
 
-    ctr_terminated = 0;
+    lib_status = INITIALIZED;
     return 1;
 }
 
@@ -760,10 +769,8 @@ static int lInitialize(lua_State *L) {
 
 /*! espeak.Info()
  *
- * Shows the current version of the eSpeak library. The version of the Lua
- * binding is given espeak.VERSION.
- *
- * This function returns a string.
+ * Gives the version of the eSpeak library, as a string. The version of
+ * the Lua binding is given in espeak.VERSION, instead.
  *
  */
 
@@ -1439,11 +1446,18 @@ static int lSynchronize(lua_State *L) {
 
 /*! espeak.Terminate()
  * Last function to be called. Returns espeak.EE_OK if the operation was
- * achieved, espeak.EE_INTERNAL_ERROR or errors or nil if the function was
- * called more then once.
+ * achieved, espeak.EE_INTERNAL_ERROR on eSpeak error. This function yells
+ * errors if called before initialization or more then once.
  */
 
 static int lTerminate(lua_State *L) {
+
+    if (lib_status == NOT_INITIALIZED)
+        luaL_error(L, "eSpeak was not initialized yet.");
+
+    if (lib_status == TERMINATED)
+        luaL_error(L, "eSpeak was already terminated.");
+
     if (ref_synth_callback != LUA_NOREF) {
         luaL_unref(L, LUA_REGISTRYINDEX, ref_synth_callback);
         ref_synth_callback = LUA_NOREF;
@@ -1454,10 +1468,8 @@ static int lTerminate(lua_State *L) {
         ref_uri_callback = LUA_NOREF;
     }
 
-    if (ctr_terminated == 0)
-        lua_pushboolean(L, espeak_Terminate());
-    else
-        lua_pushnil(L);
+    lib_status = TERMINATED;
+    lua_pushboolean(L, espeak_Terminate());
     return 1;
 }
 
