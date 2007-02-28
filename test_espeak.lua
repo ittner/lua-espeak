@@ -11,6 +11,7 @@ local event_types = {
 }
 
 io.write("espeak.VERSION = ", espeak.VERSION or "Ooops", "\n")
+io.write("espeak.Info() = ", espeak.Info(), "\n")
 espeak.Initialize(espeak.AUDIO_OUTPUT_RETRIEVAL, 10000)
 
 espeak.SetSynthCallback(function(wave, event)

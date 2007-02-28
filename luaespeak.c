@@ -26,7 +26,6 @@
  *
  * TODO: Do a better handler for callbacks (realy needed?).
  * TODO: Are these globals secure?
- * TODO: Why SynthMark uses C++ name mangling?
  * TODO: Make a better "magic" documentation.
  *
  */
@@ -44,7 +43,7 @@
 #include "speak_lib.h"
 
 #define LIB_NAME        "espeak"
-#define LIB_VERSION     LIB_NAME " 1.20r1 alpha"
+#define LIB_VERSION     LIB_NAME " 1.20.10r1 alpha"
 
 
 /* Table assumed on top */
@@ -74,7 +73,8 @@ static void push_voice(lua_State *L, const espeak_VOICE *v);
 static espeak_VOICE *get_voice(lua_State *L, int i);
 static void free_voice(espeak_VOICE *v);
 static void constants(lua_State *L);
-static int lInitialize(lua_State *L); 
+static int lInitialize(lua_State *L);
+static int lInfo(lua_State *L);  
 static int lSynth(lua_State *L);
 static int lKey(lua_State *L);
 static int lChar(lua_State *L);
@@ -758,6 +758,22 @@ static int lInitialize(lua_State *L) {
 
 
 
+/*! espeak.Info()
+ *
+ * Shows the current version of the eSpeak library. The version of the Lua
+ * binding is given espeak.VERSION.
+ *
+ * This function returns a string.
+ *
+ */
+
+static int lInfo(lua_State *L) { 
+    lua_pushstring(L, espeak_Info(NULL));
+    return 1;
+}
+
+
+
 /*! espeak.SetSynthCallback(callback_function)
  *
  * Must be called before any synthesis functions are called. This specifies
@@ -1029,7 +1045,7 @@ static int lSynth(lua_State *L) {
  * espeak.EE_BUFFER_FULL or espeak.EE_INTERNAL_ERROR) and an unique integer
  * that will also be passed to the callback function (if any).
  */
-#ifdef HAS_ESPEAK_SYNTH_MARK
+
 static int lSynth_Mark(lua_State *L) {
     const char *text = NULL;
     const char *mark = NULL;
@@ -1055,7 +1071,6 @@ static int lSynth_Mark(lua_State *L) {
 
     return 2;
 }
-#endif /* HAS_ESPEAK_SYNTH_MARK */
 
 
 /*! espeak.Key(key_name)
@@ -1449,12 +1464,11 @@ static int lTerminate(lua_State *L) {
 
 static const luaL_reg funcs[] = {
     { "Initialize",         lInitialize },
+    { "Info",               lInfo },
     { "SetSynthCallback",   lSetSynthCallback },
     { "SetUriCallback",     lSetUriCallback },
     { "Synth",              lSynth },
-#ifdef HAS_ESPEAK_SYNTH_MARK
     { "Synth_Mark",         lSynth_Mark },
-#endif
     { "Key",                lKey },
     { "Char",               lChar },
     { "SetParameter",       lSetParameter },
