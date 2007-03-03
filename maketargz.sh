@@ -14,6 +14,7 @@ mkdir $DIRNAME
 cp -r COPYING $DIRNAME
 cp -r Makefile $DIRNAME
 cp -r README $DIRNAME
+cp -r ChangeLog $DIRNAME
 cp -r luaespeak.c $DIRNAME
 cp -r test_espeak.lua $DIRNAME
 

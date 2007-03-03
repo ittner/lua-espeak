@@ -1,0 +1,13 @@
+lua-espeak changelog
+
+
+1.21-alpha - 2007-03-03
+    * Version upstream.
+    * Adding espeak.Info()
+    * Added security checkings against double initialization/termination.
+    * espeak.Synth_Mark() is working now.
+
+1.20-alpha - 2007-02-25
+    * First public release.
+
+
