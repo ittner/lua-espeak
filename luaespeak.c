@@ -43,7 +43,7 @@
 #include "speak_lib.h"
 
 #define LIB_NAME        "espeak"
-#define LIB_VERSION     LIB_NAME " 1.20.10r1 alpha"
+#define LIB_VERSION     LIB_NAME " 1.21r1 alpha"
 
 /* Secure initialization and termination */
 typedef enum { NOT_INITIALIZED, INITIALIZED, TERMINATED } status_info_t;
