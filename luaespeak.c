@@ -40,7 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "speak_lib.h"
+#include <speak_lib.h>
 
 #define LIB_NAME        "espeak"
 #define LIB_VERSION     LIB_NAME " 1.21r1 alpha"

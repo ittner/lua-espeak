@@ -22,7 +22,7 @@
 
 # Name of .pc file. "lua5.1" on Debian/Ubuntu
 LUAPKG = lua5.1
-CFLAGS = `pkg-config $(LUAPKG) --cflags` -O3 -Wall
+CFLAGS = `pkg-config $(LUAPKG) --cflags` -I. -O3 -Wall
 INSTALL_PATH = `pkg-config $(LUAPKG) --variable=INSTALL_CMOD`
 LIBS = `pkg-config $(LUAPKG) --libs` -lespeak
 
