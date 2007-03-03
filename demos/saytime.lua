@@ -64,7 +64,7 @@ function pt_spoken(h, m)
         end
         if h < 12 then
             return mt .. " da manhã"
-        elseif h > 13 and h < 19 then
+        elseif h > 12 and h < 19 then
             return mt .. " da tarde"
         else
             return mt .. " da noite"
