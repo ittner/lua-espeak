@@ -651,6 +651,8 @@ static void constants(lua_State *L) {
     /*! espeak.EE_BUFFER_FULL */
     SET_TBL_INT(L, "EE_BUFFER_FULL", EE_BUFFER_FULL)
 
+    /*! espeak.EE_NOT_FOUND */
+    SET_TBL_INT(L, "EE_NOT_FOUND", EE_NOT_FOUND)
 
     /*!! Synthesis */
 
