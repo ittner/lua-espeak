@@ -136,7 +136,7 @@ pre.wrong
 <center>
  <a href="http://lua-espeak.luaforge.net"
   ><img src="lua-espeak.png" alt="Lua-eSpeak Logo" title="Lua-eSpeak logo" border="0"></a>
- <h1>Lua-eSpeak 1.21r1 alpha</h1>
+ <h1>Lua-eSpeak 1.22r1 alpha</h1>
  <h1>D R A F T</h1>
 </center>
 
