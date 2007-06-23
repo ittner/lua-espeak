@@ -136,7 +136,7 @@ pre.wrong
 <center>
  <a href="http://lua-espeak.luaforge.net"
   ><img src="lua-espeak.png" alt="Lua-eSpeak Logo" title="Lua-eSpeak logo" border="0"></a>
- <h1>Lua-eSpeak 1.22r1 alpha</h1>
+ <h1>Lua-eSpeak 1.26r1 alpha</h1>
  <h1>D R A F T</h1>
 </center>
 
@@ -179,7 +179,7 @@ from other open source TTS engines. </p>
 <p> Lua-eSpeak is a "binding": a library that exports functions from eSpeak
 to the <a href="http://www.lua.org/">Lua Programming Language</a>, allowing
 you to use eSpeak from Lua. The API was <b>NOT</b> literally exported, but
-changed in a way that make it familiar to Lua users. </p>
+changed in a way that made it familiar to Lua users. </p>
 
 <p> Lua-eSpeak is a programming library, not a synthesis program. If you are
 looking for that or are not familiar to the Lua Programming Language, you
@@ -187,8 +187,8 @@ are in the wrong place. </p>
 
 <p><b>A NOTE ON VERSION NUMBERS:</b> Lua-eSpeak version numbers are in the
 format "X.YrZ", where X.Y indicates the eSpeak version and Z the version of
-the binding. So, the version <b>1.20r1</b> is the first version of the
-binding for eSpeak 1.20 and <b>1.20r2</b> has some improvements/bug fixes/etc.
+the binding. So, the version <b>1.26r1</b> is the first version of the
+binding for eSpeak 1.26 and <b>1.26r2</b> has some improvements/bug fixes/etc.
 but uses the same eSpeak version. </p>
 
 
@@ -200,8 +200,8 @@ under the <a href="http://www.fsf.org/licensing/licenses/gpl.html">GNU General
 Public License</a> version 2 or, at your option, any later version. It can be
 used for both academic and commercial purpouses. <b>BUT</b>, if you
 redistribute the library, you must make all source code linking against
-this library and Lua interpreter available under the GPL too; This not
-includes your Lua code. More precisely: </p>
+this library and Lua interpreter available under the GPL too; This requirement
+does not include your Lua code. More precisely: </p>
 
 <blockquote>
 <pre>
@@ -229,10 +229,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 <h2>Download and installation</h2>
 
 <p> Lua-eSpeak source code comes in a tar.gz package that can be downloaded
-from the <a href="http://luaforge.net/projects/lua-espeak/">Lua-eSpeak
-project page</a> on <a href="http://www.luaforge.net">LuaForge</a>. There are
-also some pre-compiled binary packages available for Linux and some other
-Unix systems.</p>
+from <a href="http://luaforge.net/projects/lua-espeak/">Lua-eSpeak project
+page</a> on <a href="http://www.luaforge.net">LuaForge</a>. There are also
+some pre-compiled binary packages available for Linux and some other Unix
+systems.</p>
 
 <p> After downloading, you need to compile the library. This process requires
 GNU Make, Lua, eSpeak and its dependencies (portaudio, etc.) installed on your
@@ -242,9 +242,9 @@ directory and type <code>make</code> in your favourite shell. </p>
 <p> To install the library with <b>Lua 5.1</b> and above just type
 <code>make install</code>, as root. </p>
 
-<p> <b> WARNING:</b> This will work only in systems with pkg-config (which
-includes the major Linux distributions). In other systems, you will need to
-edit the Makefile and manually install the library, by copying the
+<p> <b> WARNING:</b> This procedure will work only in systems with pkg-config
+(which includes the major Linux distributions). In other systems, you will
+need to edit the Makefile and manually install the library, by copying the
 file 'espeak.so' to your Lua binary modules directory.</p>
 
 <p> Compiling Lua-eSpeak on Windows systems is possible, but I have not

@@ -118,7 +118,10 @@ typedef enum {
 	AUDIO_OUTPUT_RETRIEVAL,
  
 	/* SYNCHRONOUS mode: as RETRIEVAL but doesn't return until synthesis is completed */
-	AUDIO_OUTPUT_SYNCHRONOUS
+	AUDIO_OUTPUT_SYNCHRONOUS,
+
+	/* Synchronous playback */
+	AUDIO_OUTPUT_SYNCH_PLAYBACK
 
 } espeak_AUDIO_OUTPUT;
 
@@ -142,7 +145,7 @@ int espeak_Initialize(espeak_AUDIO_OUTPUT output, int buflength, const char *pat
 
    path: The directory which contains the espeak-data directory, or NULL for the default location.
 
-   Returns: sample rate in Hz
+   Returns: sample rate in Hz, or -1 (EE_INTERNAL_ERROR).
 */
 
 typedef int (t_espeak_callback)(short*, int, espeak_EVENT*);
@@ -360,11 +363,11 @@ espeak_ERROR espeak_SetParameter(espeak_PARAMETER parameter, int value, int rela
 
       espeakVOLUME:  volume in range 0-100    0=silence
 
-      espeakPITCH:   base pitch in Hz
+      espeakPITCH:   base pitch, range 0-100.  50=normal
 
-      espeakRANGE:   pitch range in Hz
+      espeakRANGE:   pitch range, range 0-100. 0-monotone, 50=normal
 
-      epeakPUNCTUATION:  which punctuation characters to announce:
+      espeakPUNCTUATION:  which punctuation characters to announce:
          value in espeak_PUNCT_TYPE (none, all, some), 
 	 see espeak_GetParameter() to specify which characters are announced.
 

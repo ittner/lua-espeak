@@ -8,7 +8,7 @@
 require "espeak"
 require "saytime"
 
-espeak.Initialize(espeak.AUDIO_OUTPUT_PLAYBACK, 500)
+espeak.Initialize(espeak.AUDIO_OUTPUT_SYNCH_PLAYBACK, 500)
 
 if espeak.SetVoiceByName("brazil") ~= espeak.EE_OK then
     print("Impossível localizar a voz correta.")
@@ -18,6 +18,5 @@ end
 local dt = os.date("*t")
 espeak.Synth(saytime.pt_spoken(dt.hour, dt.min))
 
-espeak.Synchronize()
 espeak.Terminate()
 

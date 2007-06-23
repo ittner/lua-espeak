@@ -43,7 +43,7 @@
 #include <speak_lib.h>
 
 #define LIB_NAME        "espeak"
-#define LIB_VERSION     LIB_NAME " 1.22r1 alpha"
+#define LIB_VERSION     LIB_NAME " 1.26r1 alpha"
 
 /* Secure initialization and termination */
 typedef enum { NOT_INITIALIZED, INITIALIZED, TERMINATED } status_info_t;
@@ -639,6 +639,12 @@ static void constants(lua_State *L) {
      */
     SET_TBL_INT(L, "AUDIO_OUTPUT_SYNCHRONOUS", AUDIO_OUTPUT_SYNCHRONOUS)
 
+    /*! espeak.AUDIO_OUTPUT_SYNCH_PLAYBACK
+     *  Synchronous playback mode: plays the audio data, supplies events to the
+     *  calling program.
+     */
+    SET_TBL_INT(L, "AUDIO_OUTPUT_SYNCH_PLAYBACK", AUDIO_OUTPUT_SYNCH_PLAYBACK)
+
 
     /*!! Errors and status */
 
@@ -734,12 +740,13 @@ static void constants(lua_State *L) {
  * 'path' is the directory which contains the espeak-data directory, or nil
  * for the default location.
  *
- * This function returns the sample rate in Hz.
+ * This function returns the sample rate in Hz or 'nil' (internal error);
  *
  */
 
 static int lInitialize(lua_State *L) { 
     const char *path = NULL;
+    int ret;
 
     if (lib_status == INITIALIZED)
         luaL_error(L, "eSpeak was already initialized.");
@@ -748,10 +755,17 @@ static int lInitialize(lua_State *L) {
         luaL_error(L, "eSpeak was already terminated.");
     
     if (!lua_isnil(L, 3))
-        path =  lua_tostring(L, 3);
+        path = lua_tostring(L, 3);
+    
+    ret = espeak_Initialize(luaL_checknumber(L, 1),
+        luaL_checknumber(L, 2), path);
 
-    lua_pushnumber(L, espeak_Initialize(luaL_checknumber(L, 1),
-        luaL_checknumber(L, 2), path));
+    if (ret != -1) {    /* ret == -1 -> Internal error */
+        lua_pushnumber(L, ret);
+    } else {
+        lua_pushnil(L);
+        return 1;   /* Internal error */
+    }
 
     if (ref_synth_callback != LUA_NOREF) {
         luaL_unref(L, LUA_REGISTRYINDEX, ref_synth_callback);
@@ -1129,10 +1143,10 @@ static int lChar(lua_State *L) {
  *
  *      espeak.RATE:    speaking speed in word per minute.
  *      espeak.VOLUME:  volume in range 0-100, 0 = silence
- *      espeak.PITCH:   base pitch in Hz
- *      espeak.RANGE:   pitch range in Hz
+ *      espeak.PITCH:   base pitch, range 0-100.  50=normal
+ *      espeak.RANGE:   pitch range, range 0-100. 0-monotone, 50=normal
  *
- *      epeak.PUNCTUATION:  which punctuation characters to announce:
+ *      espeak.PUNCTUATION:  which punctuation characters to announce:
  *         value in espeak_PUNCT_TYPE (none, all, some), 
  *	 see espeak_GetParameter() to specify which characters are announced.
  *
