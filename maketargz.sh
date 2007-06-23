@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=lua-espeak
-VERSION=1.22r1-alpha
+VERSION=1.26r1-alpha
 
 DIRNAME=$PACKAGE-$VERSION
 TGZNAME=$DIRNAME.tar.gz
@@ -27,3 +27,4 @@ rm -rf $DIRNAME/doc/.svn
 tar -czf $TGZNAME $DIRNAME
 rm -rf $DIRNAME
 tar -tzf $TGZNAME
+
