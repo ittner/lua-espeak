@@ -10,7 +10,7 @@ source = {
 description = {
    summary = "A speech synthesis library for Lua",
    detailed = [[
-Lua-eSpeak is a Lua bindind o eSpeak, a compact open source software speech
+Lua-eSpeak is a Lua bindind to eSpeak, a compact open source software speech
 synthesizer for English and several other languages. It produces good quality
 English speech using a different synthesis method from other open source TTS
 engines.
