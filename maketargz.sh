@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PACKAGE=lua-espeak
-VERSION=1.26r1-alpha
+VERSION=1.36r1
 
 DIRNAME=$PACKAGE-$VERSION
 TGZNAME=$DIRNAME.tar.gz

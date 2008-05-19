@@ -1,10 +1,10 @@
 /*
  * lua-espeak - A speech synthesis library for the Lua programming language
- * (c) 2007 Alexandre Erwin Ittner <aittner@netuno.com.br>
+ * (c) 2007-08 Alexandre Erwin Ittner <aittner@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -40,10 +40,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <speak_lib.h>
+#include <espeak/speak_lib.h>
 
 #define LIB_NAME        "espeak"
-#define LIB_VERSION     LIB_NAME " 1.26r1 alpha"
+#define LIB_VERSION     LIB_NAME " 1.36r1"
 
 /* Secure initialization and termination */
 typedef enum { NOT_INITIALIZED, INITIALIZED, TERMINATED } status_info_t;
@@ -113,8 +113,10 @@ static void push_event(lua_State *L, espeak_EVENT *ev) {
     /* sample id (internal use) */
     SET_TBL_INT(L, "sample", ev->sample);
 
-    if (ev->type == espeakEVENT_WORD || ev->type == espeakEVENT_SENTENCE) {
-        /* used for WORD and SENTENCE events */
+    if (ev->type == espeakEVENT_WORD || ev->type == espeakEVENT_SENTENCE
+    || ev->type == espeakEVENT_PHONEME) {
+        /* used for WORD, SENTENCE and PHONEME events. For PHONEME events
+           this is the phoneme mnemonic. */
         SET_TBL_INT(L, "id", (ev->id.number));
     } else if (ev->type == espeakEVENT_MARK || ev->type == espeakEVENT_PLAY) {
         /* used for MARK and PLAY events.  UTF8 string */
@@ -586,6 +588,11 @@ static void constants(lua_State *L) {
      *  Start of sentence.
      */
     SET_TBL_INT(L, "EVENT_SENTENCE", espeakEVENT_SENTENCE)
+    
+    /*! espeak.EVENT_PHONEME
+     *  Phoneme, if enabled in espeak.Initialize()
+     */
+    SET_TBL_INT(L, "EVENT_PHONEME", espeakEVENT_PHONEME)
 
     /*! espeak.EVENT_MARK
      *  Mark.
@@ -598,7 +605,7 @@ static void constants(lua_State *L) {
     SET_TBL_INT(L, "EVENT_PLAY", espeakEVENT_PLAY)
 
     /*! espeak.EVENT_END
-     *  End of sentence.
+     *  End of sentence or clause.
      */
     SET_TBL_INT(L, "EVENT_END", espeakEVENT_END)
 
@@ -706,6 +713,9 @@ static void constants(lua_State *L) {
 
     /*! espeak.CAPITALS */
     SET_TBL_INT(L, "CAPITALS", espeakCAPITALS)
+    
+    /*! espeak.WORDGAP */
+    SET_TBL_INT(L, "WORDGAP", espeakWORDGAP)
 
 
     /*!! Punctuation */
@@ -726,7 +736,7 @@ static void constants(lua_State *L) {
 
 /*!! Initialization */
 
-/*! espeak.Initialize(audio_output, buflength, path)
+/*! espeak.Initialize(audio_output, buflength, path, options)
  *
  * Must be called before any synthesis functions are called. This function
  * yells errors if called more then once.
@@ -740,12 +750,18 @@ static void constants(lua_State *L) {
  * 'path' is the directory which contains the espeak-data directory, or nil
  * for the default location.
  *
+ * 'options' is a integer bitvector. The following values are valid:
+ *      Bit 0: Set to allow espeak.EVENT_PHONEME events.
+ * for compatibility with previous versions of Lua-eSpeak, passing 'nil' or
+ * not passing this parameter is interpreted as zero.
+ *
  * This function returns the sample rate in Hz or 'nil' (internal error);
  *
  */
 
 static int lInitialize(lua_State *L) { 
     const char *path = NULL;
+    int options = 0;
     int ret;
 
     if (lib_status == INITIALIZED)
@@ -756,9 +772,12 @@ static int lInitialize(lua_State *L) {
     
     if (!lua_isnil(L, 3))
         path = lua_tostring(L, 3);
+        
+    if (!lua_isnil(L, 4))
+        options = lua_tointeger(L, 4);
     
     ret = espeak_Initialize(luaL_checknumber(L, 1),
-        luaL_checknumber(L, 2), path);
+        luaL_checknumber(L, 2), path, options);
 
     if (ret != -1) {    /* ret == -1 -> Internal error */
         lua_pushnumber(L, ret);
@@ -819,7 +838,8 @@ static int lInfo(lua_State *L) {
  * and <audio> elements within the text. Valid elements are:
  *
  *      type: The event type, that must be espeak.EVENT_LIST_TERMINATED,
- *            EVENT_WORD, EVENT_SENTENCE, EVENT_MARK, EVENT_PLAY, EVENT_END
+ *            EVENT_WORD, EVENT_SENTENCE, EVENT_PHONEME (if enabled in 
+ *            speak.Initialize()), EVENT_MARK, EVENT_PLAY, EVENT_END
  *            or EVENT_MSG_TERMINATED.
  *      
  *      unique_identifier: The integer id passed from Synth function.
@@ -828,10 +848,10 @@ static int lInfo(lua_State *L) {
  *  
  *      length: For espeak.EVENT_WORD, the word length, in characters.
  *      
- *      audio_position: The time in mS within the generated output data.
+ *      audio_position: The time in ms within the generated output data.
  *
- *      id: a number for WORD and SENTENCE events or a UTF8 string for MARK
- *          and PLAY events.
+ *      id: a number for WORD, SENTENCE or PHONEME events or a UTF8 string
+ *          for MARK and PLAY events.
  *
  * Callback functions must return 'false' to continue synthesis or 'true' to
  * abort.
@@ -1006,7 +1026,7 @@ static int lSetUriCallback(lua_State *L) {
  *          not recognised are ignored.
  *
  *     espeak.PHONEMES  Text within [[ ]] is treated as phonemes codes (in
- *          espeak's Hirschenbaum encoding).
+ *          espeak's Hirshenbaum encoding).
  *
  *     espeak.ENDPAUSE  If set then a sentence pause is added at the end of
  *          the text.  If not set then this pause is suppressed.
@@ -1098,8 +1118,9 @@ static int lSynth_Mark(lua_State *L) {
 
 /*! espeak.Key(key_name)
  *
- * Speak the name of a keyboard key. Currently, this just speaks the
- * 'key_name', given as a string.
+ * Speak the name of a keyboard key. If key_name is a single character, it
+ * speaks the name of the character. Otherwise, it speaks key_name as a text
+ * string.
  *
  *  Return: espeak.EE_OK: operation achieved 
  *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
@@ -1148,7 +1169,7 @@ static int lChar(lua_State *L) {
  *
  *      espeak.PUNCTUATION:  which punctuation characters to announce:
  *         value in espeak_PUNCT_TYPE (none, all, some), 
- *	 see espeak_GetParameter() to specify which characters are announced.
+ *         see espeak_GetParameter() to specify which characters are announced.
  *
  *      espeak.CAPITALS: announce capital letters by:
  *         0=none,
@@ -1157,6 +1178,8 @@ static int lChar(lua_State *L) {
  *         3 or higher, by raising pitch.  This values gives the amount
  *              in Hz by which the pitch of a word raised to indicate it
  *              has a capital letter.
+ *
+ *      espeak.WORDGAP: pause between words, units of 10ms (at the default speed)
  *
  *  Return: espeak.EE_OK: operation achieved 
  *          espeak.EE_BUFFER_FULL: the command can not be buffered;  you may
@@ -1286,7 +1309,7 @@ static int lSetPhonemeTrace(lua_State *L) {
 
     
 
-/*! espeak.CompileDictionary(path, filehandle)
+/*! espeak.CompileDictionary(path, filehandle, flags)
  *
  * Compile pronunciation dictionary for a language which corresponds to the
  * currently selected voice. The required voice should be selected before
@@ -1298,6 +1321,13 @@ static int lSetPhonemeTrace(lua_State *L) {
  * 'filehandle' is the output stream for error reports and statistics
  * information. If nil, then io.stderr will be used.
  *
+ * 'flags' is a integer bitvector that accepts the following values:
+ *     Bit 0: include source line information for debug purposes (as is
+ *            displayed with the -X command line option in 'speak' command).
+ * for compatibility with previous versions of Lua-eSpeak, passing 'nil' or
+ * not passing this parameter is interpreted as zero.
+ *      
+ *
  * This function returns no values.
  *
  */
@@ -1305,12 +1335,16 @@ static int lSetPhonemeTrace(lua_State *L) {
 static int lCompileDictionary(lua_State *L) {
     const char *path;
     FILE *fp = NULL;
+    int flags = 0;
 
     path = luaL_checkstring(L, 1);
     if (!lua_isnil(L, 2))
         fp = checkfile(L, 2);
+        
+    if (!lua_isnil(L, 3))
+        flags = lua_tointeger(L, 3);
 
-    espeak_CompileDictionary(path, fp);
+    espeak_CompileDictionary(path, fp, flags);
     return 0;
 }
 

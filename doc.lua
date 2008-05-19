@@ -136,7 +136,7 @@ pre.wrong
 <center>
  <a href="http://lua-espeak.luaforge.net"
   ><img src="lua-espeak.png" alt="Lua-eSpeak Logo" title="Lua-eSpeak logo" border="0"></a>
- <h1>Lua-eSpeak 1.26r1 alpha</h1>
+ <h1>Lua-eSpeak 1.36r1</h1>
  <h1>D R A F T</h1>
 </center>
 
@@ -187,8 +187,8 @@ are in the wrong place. </p>
 
 <p><b>A NOTE ON VERSION NUMBERS:</b> Lua-eSpeak version numbers are in the
 format "X.YrZ", where X.Y indicates the eSpeak version and Z the version of
-the binding. So, the version <b>1.26r1</b> is the first version of the
-binding for eSpeak 1.26 and <b>1.26r2</b> has some improvements/bug fixes/etc.
+the binding. So, the version <b>1.36r1</b> is the first version of the
+binding for eSpeak 1.36 and <b>1.36r2</b> has some improvements/bug fixes/etc.
 but uses the same eSpeak version. </p>
 
 
@@ -197,7 +197,7 @@ but uses the same eSpeak version. </p>
 
 <p> eSpeak and Lua-eSpeak are <em>copyrighted free software</em>, distributed
 under the <a href="http://www.fsf.org/licensing/licenses/gpl.html">GNU General
-Public License</a> version 2 or, at your option, any later version. It can be
+Public License</a> version 3 or, at your option, any later version. It can be
 used for both academic and commercial purpouses. <b>BUT</b>, if you
 redistribute the library, you must make all source code linking against
 this library and Lua interpreter available under the GPL too; This requirement
@@ -205,11 +205,11 @@ does not include your Lua code. More precisely: </p>
 
 <blockquote>
 <pre>
-(c) 2007 Alexandre Erwin Ittner &lt;aittner X netuno.com.br&gt;
+(c) 2007-08 Alexandre Erwin Ittner &lt;aittner X gmail.com&gt;
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -326,7 +326,7 @@ within the distribution package. </p>
 
 <p>
 Author: <b>Alexandre Erwin Ittner</b>
-<br> E-mail: <a href="mailto:aittner#netuno.com.br">aittner<b>#</b>netuno.com.br</a>
+<br> E-mail: <a href="mailto:aittner#gmail.com">aittner<b>#</b>gmail.com</a>
 (e-mail obfuscated to avoid spam-bots. Please replace the "#" with an "@").
 
 <br> GnuPG/PGP Key: <a href="http://users.netuno.com.br/aittner/AlexandreErwinIttner.pub.asc">0x0041A1FB</a>

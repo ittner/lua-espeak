@@ -32,7 +32,8 @@ local opts = {
     p = "PITCH",
     a = "RANGE",
     u = "PUNCTUATION",
-    c = "CAPITALS"
+    c = "CAPITALS",
+    w = "WORDGAP"
 }
 
 local opt, num, par, v
