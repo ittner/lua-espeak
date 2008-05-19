@@ -3,8 +3,6 @@ require "docparse"
 print [[
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
-<!-- Generated code - do no modify -->
-
 <html>
  <head>
   <title>Lua-eSpeak Reference Manual</title>
@@ -137,7 +135,7 @@ pre.wrong
  <a href="http://lua-espeak.luaforge.net"
   ><img src="lua-espeak.png" alt="Lua-eSpeak Logo" title="Lua-eSpeak logo" border="0"></a>
  <h1>Lua-eSpeak 1.36r1</h1>
- <h1>D R A F T</h1>
+ <h1>DRAFT</h1>
 </center>
 
 <h2> Contents </h2>

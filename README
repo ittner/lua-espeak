@@ -1,5 +1,5 @@
-lua-eSpeak - A speech synthesis library for the Lua programming language
-(c) 2007-08 Alexandre Erwin Ittner <aittner@netuno.com.br>
+Lua-eSpeak - A speech synthesis library for the Lua programming language
+(c) 2007-08 Alexandre Erwin Ittner <aittner@gmail.com>
 
 
     WARNING: Lua-eSpeak stills under development AND MUST BE CONSIDERED
@@ -36,7 +36,7 @@ if you redistribute the library, you must make all source code linking
 against this library and Lua interpreter available under the GPL too;
 This not includes your Lua code. More precisely: 
 
-    (c) 2007-08 Alexandre Erwin Ittner <aittner@netuno.com.br>
+    (c) 2007-08 Alexandre Erwin Ittner <aittner@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

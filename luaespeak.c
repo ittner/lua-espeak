@@ -69,7 +69,7 @@ static lua_State *callback_state = NULL;    /* Pass states to callbacks */
 
 static void push_event(lua_State *L, espeak_EVENT *ev);
 static espeak_EVENT *get_event(lua_State *L, int i);
-static void push_language_list(lua_State *L, char *langlist);
+static void push_language_list(lua_State *L, const char *langlist);
 static char *get_language_list(lua_State *L, int i);
 static void push_voice(lua_State *L, const espeak_VOICE *v);
 static espeak_VOICE *get_voice(lua_State *L, int i);
@@ -294,7 +294,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
  *
  */
 
-static void push_language_list(lua_State *L, char *langlist) {
+static void push_language_list(lua_State *L, const char *langlist) {
     int i = 1;
     int pos = 0;
 
@@ -736,15 +736,15 @@ static void constants(lua_State *L) {
 
 /*!! Initialization */
 
-/*! espeak.Initialize(audio_output, buflength, path, options)
+/*! espeak.Initialize(audio_output, buflength, [ path, [ options ]])
  *
  * Must be called before any synthesis functions are called. This function
- * yells errors if called more then once.
+ * yields errors if called more then once.
  *
  * 'audio_output' is the audio data can either be played by eSpeak or passed
  *  back by the SynthCallback function.
  *
- * 'buflength' is the length (in mS) of sound buffers passed to the
+ * 'buflength' is the length (in miliseconds) of sound buffers passed to the
  * SynthCallback function.
  *
  * 'path' is the directory which contains the espeak-data directory, or nil
@@ -995,7 +995,7 @@ static int lSetUriCallback(lua_State *L) {
 
 /*!! Synthesis */
 
-/*! espeak.Synth(text, position, position_type, end_position, flags) 
+/*! espeak.Synth(text, position, position_type, [ end_position, [ flags ]]) 
  *
  * Synthesize speech for the specified text.  The speech sound data is passed
  * to the calling program in buffers by means of the callback function
@@ -1072,7 +1072,7 @@ static int lSynth(lua_State *L) {
 
 
 
-/*! espeak.Synth_Mark(text, index_mark, end_position, flags)
+/*! espeak.Synth_Mark(text, index_mark, [ end_position, [ flags ]])
  *
  * Synthesize speech for the specified text. Similar to espeak.Synth() but
  * the start position is specified by the name of a <mark> element in the
@@ -1309,7 +1309,7 @@ static int lSetPhonemeTrace(lua_State *L) {
 
     
 
-/*! espeak.CompileDictionary(path, filehandle, flags)
+/*! espeak.CompileDictionary(path, filehandle, [ flags ])
  *
  * Compile pronunciation dictionary for a language which corresponds to the
  * currently selected voice. The required voice should be selected before

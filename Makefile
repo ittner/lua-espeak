@@ -22,8 +22,8 @@
 
 # Name of .pc file. "lua5.1" on Debian/Ubuntu
 LUAPKG = lua5.1
-CFLAGS = `pkg-config $(LUAPKG) --cflags` -I. -O3 -Wall
-LFLAGS = -shared
+CFLAGS = `pkg-config $(LUAPKG) --cflags` -O3 -fpic -Wall
+LFLAGS = -O3 -shared -fpic
 LIBS = -lespeak
 INSTALL_PATH = `pkg-config $(LUAPKG) --variable=INSTALL_CMOD`
 
@@ -32,21 +32,24 @@ INSTALL_PATH = `pkg-config $(LUAPKG) --variable=INSTALL_CMOD`
 ## uncomment and change the following ones according to your building
 ## enviroment.
 
-#CFLAGS = -I/usr/include/lua5.1/ -O3 -Wall
-#LFLAGS = -shared
+#CFLAGS = -I/usr/include/lua5.1/ -O3 -fpic -Wall
+#LFLAGS = -O3 -shared -fpic
 #LIBS = -lespeak
 #INSTALL_PATH = /usr/lib/lua/5.1
 
 
-espeak.so: luaespeak.c
-	$(CC) -o espeak.so $(LFLAGS) $(LIBS) $(CFLAGS) luaespeak.c
+luaespeak.o: luaespeak.c
+	$(CC) -o luaespeak.o $(CFLAGS) -c luaespeak.c
+
+espeak.so: luaespeak.o
+	$(CC) -o espeak.so $(LFLAGS) $(LIBS) luaespeak.o
 
 install: espeak.so
 	make test
-	install -s espeak.so $(INSTALL_PATH)
+	install -D -s espeak.so $(INSTALL_PATH)/espeak.so
 
 clean:
-	$(RM) espeak.so
+	$(RM) espeak.so luaespeak.o
 
 test: espeak.so test_espeak.lua
 	lua test_espeak.lua
