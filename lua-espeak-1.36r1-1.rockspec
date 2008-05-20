@@ -10,11 +10,11 @@ source = {
 description = {
    summary = "A speech synthesis library for Lua",
    detailed = [[
-Lua-eSpeak is a Lua bindind to eSpeak, a compact open source software speech
-synthesizer for English and several other languages. It produces good quality
-English speech using a different synthesis method from other open source TTS
-engines.
-]],
+      Lua-eSpeak is a Lua bindind to eSpeak, a compact open source software speech
+      synthesizer for English and several other languages. It produces good quality
+      English speech using a different synthesis method from other open source TTS
+      engines.
+   ]],
    license = "GNU GPL v3",
    homepage = "http://lua-espeak.luaforge.net/",
    maintainer = "Alexandre Erwin Ittner"
@@ -25,7 +25,7 @@ dependencies = {
 }
 
 external_dependencies = {
-   espeak = {
+   ESPEAK = {
       header = "espeak/speak_lib.h"
    }
 }
@@ -33,10 +33,9 @@ external_dependencies = {
 build = {
    type = "make",
    variables = {
-      CFLAGS = "-I$(LUA_INCDIR) -O3 -Wall",
-      LFLAGS = "$(LIBFLAG)",
+      CFLAGS = "-I$(LUA_INCDIR) -I$(ESPEAK_INCDIR) -O3 -Wall",
+      LFLAGS = "$(LIBFLAG) -L$(ESPEAK_LIBDIR)",
       LIBS = "-lespeak",
       INSTALL_PATH = "$(LIBDIR)"
    }
 }
-
