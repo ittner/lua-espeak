@@ -132,8 +132,9 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
     espeak_EVENT *ev; 
 
     luaL_checktype(L, i, LUA_TTABLE);
-
-    if ((ev = (espeak_EVENT*) malloc(sizeof(espeak_EVENT))) == NULL) {
+    
+    ev = (espeak_EVENT*) malloc(sizeof(espeak_EVENT));
+    if (ev == NULL) {
         luaL_error(L, "Memory allocation failure");
         return NULL; /* Never reached. Just avoids warnings. */ 
     }
@@ -166,7 +167,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
             ev->unique_identifier = lua_tonumber(L, -1);
         } else {
             free(ev);
-            luaL_error(L, "Bad event 'unique_identifier'");
+            luaL_error(L, "Bad data type for 'unique_identifier'");
             return NULL; /* Never reached. Just avoids warnings. */ 
         }
     }
@@ -179,7 +180,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
             ev->text_position = lua_tonumber(L, -1);
         } else {
             free(ev);
-            luaL_error(L, "Bad event 'text_position'");
+            luaL_error(L, "Bad data type for 'text_position'");
             return NULL; /* Never reached. Just avoids warnings. */ 
         }
     }
@@ -192,7 +193,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
             ev->length = lua_tonumber(L, -1);
         } else {
             free(ev);
-            luaL_error(L, "Bad event 'lenght'");
+            luaL_error(L, "Bad data type for 'length'");
             return NULL; /* Never reached. Just avoids warnings. */ 
         }
     }
@@ -205,7 +206,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
             ev->audio_position = lua_tonumber(L, -1);
         } else {
             free(ev);
-            luaL_error(L, "Bad event 'audio_position'");
+            luaL_error(L, "Bad data type for 'audio_position'");
             return NULL; /* Never reached. Just avoids warnings. */ 
         }
     }
@@ -218,7 +219,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
             ev->sample = lua_tonumber(L, -1);
         } else {
             free(ev);
-            luaL_error(L, "Bad event 'sample'");
+            luaL_error(L, "Bad data type for 'sample'");
             return NULL; /* Never reached. Just avoids warnings. */ 
         }
     }
@@ -232,7 +233,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
                 ev->id.number = lua_tonumber(L, -1);
             } else {
                 free(ev);
-                luaL_error(L, "Bad event 'id'");
+                luaL_error(L, "Bad data type for 'id'");
                 return NULL; /* Never reached. Just avoids warnings. */ 
             }
         }
@@ -242,7 +243,7 @@ static espeak_EVENT *get_event(lua_State *L, int i) {
                 ev->id.name = strdup(lua_tostring(L, -1));
             } else {
                 free(ev);
-                luaL_error(L, "Bad event 'id'");
+                luaL_error(L, "Bad data type for 'id'");
                 return NULL; /* Never reached. Just avoids warnings. */ 
             }
         }
