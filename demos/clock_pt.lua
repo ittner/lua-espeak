@@ -2,7 +2,7 @@
 -- -*- coding: utf-8 -*-
 
 -- Says the time of the day as in the spoken Portuguese.
--- (c) 2007-08 Alexandre Erwin Ittner <aittner@gmail.com>
+-- (c) 2007-08 Alexandre Erwin Ittner <alexandre@ittner.com.br>
 -- Distributed under the GPL v2 or later.
 
 require "espeak"

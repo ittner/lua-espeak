@@ -2,7 +2,7 @@
 -- -*- coding: utf-8 -*-
 
 -- Writes speech to a audio file.
--- (c) 2007 Alexandre Erwin Ittner <aittner@netuno.com.br>
+-- (c) 2007 Alexandre Erwin Ittner <alexandre@ittner.com.br>
 -- Distributed under the GPL v2 or later.
 
 require "espeak"

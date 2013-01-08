@@ -203,7 +203,7 @@ does not include your Lua code. More precisely: </p>
 
 <blockquote>
 <pre>
-(c) 2007-08 Alexandre Erwin Ittner &lt;aittner X gmail.com&gt;
+(c) 2007-08 Alexandre Erwin Ittner &lt;alexandre X ittner.com.br&gt;
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -324,12 +324,12 @@ within the distribution package. </p>
 
 <p>
 Author: <b>Alexandre Erwin Ittner</b>
-<br> E-mail: <a href="mailto:aittner#gmail.com">aittner<b>#</b>gmail.com</a>
+<br> E-mail: <a href="mailto:alexandre#ittner.com.br">alexandre<b>#</b>ittner.com.br</a>
 (e-mail obfuscated to avoid spam-bots. Please replace the "#" with an "@").
 
-<br> GnuPG/PGP Key: <a href="http://users.netuno.com.br/aittner/AlexandreErwinIttner.pub.asc">0x0041A1FB</a>
+<br> GnuPG/PGP Key: <a href="http://www.ittner.com.br/AlexandreErwinIttner.pub.asc">0x0041A1FB</a>
  (key fingerprint: <code>9B49 FCE2 E6B9 D1AD 6101  29AD 4F6D F114 0041 A1FB</code>).
-<br> Homepage: <a href="http://users.netuno.com.br/aittner/">http://users.netuno.com.br/aittner/</a>.
+<br> Homepage: <a href="http://www.ittner.com.br/">http://www.ittner.com.br/</a>.
 <br> Location: Jaraguá do Sul, Santa Catarina, Brazil.
 </p>
 

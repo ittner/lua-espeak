@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --
 -- Functions to "say" the time of the day.
--- (c) 2007-08 Alexandre Erwin Ittner <aittner@gmail.com>
+-- (c) 2007-08 Alexandre Erwin Ittner <alexandre@ittner.com.br>
 --
 -- This file is part of Lua-eSpeak and is distributed under the GNU GPL v2
 -- or, at your option, any later version.

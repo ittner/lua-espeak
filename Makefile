@@ -1,5 +1,5 @@
 # lua-espeak - A speech synthesis library for the Lua programming language
-# (c) 2007-08 Alexandre Erwin Ittner <aittner@gmail.com>
+# (c) 2007-08 Alexandre Erwin Ittner <alexandre@ittner.com.br>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

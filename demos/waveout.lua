@@ -1,7 +1,7 @@
 -- -*- coding: utf-8 -*-
 --
 -- Puts raw PCM audio data into a Wave container.
--- (c) 2007 Alexandre Erwin Ittner <aittner@netuno.com.br>
+-- (c) 2007 Alexandre Erwin Ittner <alexandre@ittner.com.br>
 --
 -- This file is part of Lua-eSpeak and is distributed under the GNU GPL v2
 -- or, at your option, any later version.
